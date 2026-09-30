@@ -1,4 +1,6 @@
 import { Image } from 'expo-image';
+import { AppText } from '@/components/app-text';
+import { AppIcon } from '@/components/app-icon';
 import * as SplashScreen from 'expo-splash-screen';
 import { useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
@@ -33,7 +35,7 @@ export function AnimatedSplashOverlay() {
     },
   });
 
-  const image = <Image style={styles.image} source={require('@/assets/images/expo-logo.png')} />;
+  const image = <View style={styles.wordmark}><AppText style={styles.wordmarkText}>Amivoy</AppText><AppIcon name="✳" size={22} color="#FFD000" /></View>;
 
   return animate ? (
     <Animated.View
@@ -111,6 +113,8 @@ export function AnimatedIcon() {
 }
 
 const styles = StyleSheet.create({
+  wordmark: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  wordmarkText: { color: '#133B2C', fontSize: 30, fontWeight: '900', letterSpacing: -1.5 },
   imageContainer: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -133,14 +137,14 @@ const styles = StyleSheet.create({
   },
   background: {
     borderRadius: 40,
-    experimental_backgroundImage: `linear-gradient(180deg, #3C9FFE, #0274DF)`,
+    experimental_backgroundImage: `linear-gradient(180deg, #133B2C, #0C2B20)`,
     width: 128,
     height: 128,
     position: 'absolute',
   },
   splashOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: '#208AEF',
+    backgroundColor: '#FCFBF7',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,

@@ -1,180 +1,196 @@
-import { Image } from 'expo-image';
-import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-import { ExternalLink } from '@/components/external-link';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Collapsible } from '@/components/ui/collapsible';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-
-export default function TabTwoScreen() {
-  const safeAreaInsets = useSafeAreaInsets();
-  const insets = {
-    ...safeAreaInsets,
-    bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
-  };
-  const theme = useTheme();
-
-  const contentPlatformStyle = Platform.select({
-    android: {
-      paddingTop: insets.top,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-      paddingBottom: insets.bottom,
-    },
-    web: {
-      paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
-    },
-  });
-
+import { AppText, AppTextInput } from "@/components/app-text";
+import { AppIcon } from "@/components/app-icon";
+import { Link } from "expo-router";
+import { useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  BottomBar,
+  C,
+  Eyebrow,
+  Header,
+  Page,
+  SectionTitle,
+  Surface,
+  TripCard,
+  s,
+} from "@/components/app-ui";
+import { discover, trips } from "@/data/mock";
+export default function ExploreScreen() {
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("Tout");
+  const filtered = useMemo(
+    () =>
+      trips.filter(
+        (x) =>
+          `${x.title} ${x.destination}`
+            .toLowerCase()
+            .includes(query.toLowerCase()) &&
+          (filter === "Tout" || x.status === filter),
+      ),
+    [query, filter],
+  );
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
-          <ThemedText style={styles.centerText} themeColor="textSecondary">
-            This starter app includes example{'\n'}code to help you get started.
-          </ThemedText>
-
-          <ExternalLink href="https://docs.expo.dev" asChild>
-            <Pressable style={({ pressed }) => pressed && styles.pressed}>
-              <ThemedView type="backgroundElement" style={styles.linkButton}>
-                <ThemedText type="link">Expo documentation</ThemedText>
-                <SymbolView
-                  tintColor={theme.text}
-                  name={{ ios: 'arrow.up.right.square', android: 'link', web: 'link' }}
-                  size={12}
-                />
-              </ThemedView>
+    <View style={{ flex: 1, backgroundColor: C.cream }}>
+      <Page>
+        <Header title="Explorer" />
+        <View style={s.hero}>
+          <Eyebrow>TON PROCHAIN DÉPART</Eyebrow>
+          <AppText style={[s.heroTitle, { fontSize: 28 }]}>
+            Chaque voyage a{"\n"}une histoire à vivre.
+          </AppText>
+          <AppText style={s.heroSub}>
+            Trouve l’inspiration, puis invite ta bande.
+          </AppText>
+        </View>
+        <View style={st.search}>
+          <AppText style={{ fontSize: 18, color: C.muted }}>⌕</AppText>
+          <AppTextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Destination, voyage…"
+            placeholderTextColor="#99A198"
+            style={st.input}
+          />
+          <AppText style={{ color: C.green }}>☷</AppText>
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8 }}
+        >
+          {["Tout", "En cours", "À venir"].map((x) => (
+            <Pressable
+              key={x}
+              onPress={() => setFilter(x)}
+              style={[st.filter, filter === x && st.filterOn]}
+            >
+              <AppText style={[st.filterText, filter === x && { color: "#fff" }]}>
+                {x}
+              </AppText>
             </Pressable>
-          </ExternalLink>
-        </ThemedView>
-
-        <ThemedView style={styles.sectionsWrapper}>
-          <Collapsible title="File-based routing">
-            <ThemedText type="small">
-              This app has two screens: <ThemedText type="code">src/app/index.tsx</ThemedText> and{' '}
-              <ThemedText type="code">src/app/explore.tsx</ThemedText>
-            </ThemedText>
-            <ThemedText type="small">
-              The layout file in <ThemedText type="code">src/app/_layout.tsx</ThemedText> sets up
-              the tab navigator.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/router/introduction">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Android, iOS, and web support">
-            <ThemedView type="backgroundElement" style={styles.collapsibleContent}>
-              <ThemedText type="small">
-                You can open this project on Android, iOS, and the web. To open the web version,
-                press <ThemedText type="smallBold">w</ThemedText> in the terminal running this
-                project.
-              </ThemedText>
-              <Image
-                source={require('@/assets/images/tutorial-web.png')}
-                style={styles.imageTutorial}
-              />
-            </ThemedView>
-          </Collapsible>
-
-          <Collapsible title="Images">
-            <ThemedText type="small">
-              For static images, you can use the <ThemedText type="code">@2x</ThemedText> and{' '}
-              <ThemedText type="code">@3x</ThemedText> suffixes to provide files for different
-              screen densities.
-            </ThemedText>
-            <Image source={require('@/assets/images/react-logo.png')} style={styles.imageReact} />
-            <ExternalLink href="https://reactnative.dev/docs/images">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Light and dark mode components">
-            <ThemedText type="small">
-              This template has light and dark mode support. The{' '}
-              <ThemedText type="code">useColorScheme()</ThemedText> hook lets you inspect what the
-              user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Animations">
-            <ThemedText type="small">
-              This template includes an example of an animated component. The{' '}
-              <ThemedText type="code">src/components/ui/collapsible.tsx</ThemedText> component uses
-              the powerful <ThemedText type="code">react-native-reanimated</ThemedText> library to
-              animate opening this hint.
-            </ThemedText>
-          </Collapsible>
-        </ThemedView>
-        {Platform.OS === 'web' && <WebBadge />}
-      </ThemedView>
-    </ScrollView>
+          ))}
+        </ScrollView>
+        <Link href="/map" asChild>
+          <Pressable style={st.mapCta}>
+            <AppText style={{ fontSize: 20 }}>⌖</AppText>
+            <View style={{ flex: 1 }}>
+              <AppText style={{ fontSize: 12, fontWeight: "800", color: C.ink }}>
+                Explorer sur la carte
+              </AppText>
+              <AppText style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>
+                Trouve un lieu et des idées de trajets
+              </AppText>
+            </View>
+            <AppText style={{ color: C.green }}>›</AppText>
+          </Pressable>
+        </Link>
+        <SectionTitle title="Tes voyages" action={`${trips.length} voyages`} />
+        {filtered.map((t) => (
+          <TripCard key={t.id} trip={t} />
+        ))}
+        {filtered.length === 0 && (
+          <Surface>
+            <AppText style={{ color: C.muted }}>
+              Aucun voyage ne correspond à ta recherche.
+            </AppText>
+          </Surface>
+        )}
+        <View style={st.ai}>
+          <AppText style={{ fontSize: 24 }}>✦</AppText>
+          <View style={{ flex: 1 }}>
+            <AppText style={{ fontSize: 14, fontWeight: "800", color: C.ink }}>
+              Une idée de destination ?
+            </AppText>
+            <AppText style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+              Décris ton voyage idéal, on le prépare ensemble.
+            </AppText>
+          </View>
+          <Link
+            href="/create-trip"
+            style={{ color: C.green, fontWeight: "800" }}
+          >
+            Créer ›
+          </Link>
+        </View>
+        <SectionTitle title="Voyages à découvrir" action="Voir tout" />
+        <View style={{ gap: 10 }}>
+          {discover.map((x, i) => (
+            <Surface key={x.title} style={st.discovery}>
+              <View
+                style={[
+                  st.discoverEmoji,
+                  { backgroundColor: ["#E6E7D4", "#EADDD2", "#DFE8E8"][i] },
+                ]}
+              >
+                <AppIcon name={x.emoji} size={25} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <AppText style={{ fontSize: 13, fontWeight: "800", color: C.ink }}>
+                  {x.title}
+                </AppText>
+                <AppText style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>
+                  {x.place}
+                </AppText>
+              </View>
+              <AppText style={{ color: C.green }}>♡ {x.saves}</AppText>
+            </Surface>
+          ))}
+        </View>
+      </Page>
+      <BottomBar active="explore" />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
+const st = StyleSheet.create({
+  search: {
+    height: 48,
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderColor: C.line,
   },
-  contentContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  input: { flex: 1, fontSize: 13, color: C.ink },
+  filter: {
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    borderRadius: 30,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: C.line,
   },
-  container: {
-    maxWidth: MaxContentWidth,
-    flexGrow: 1,
+  filterOn: { backgroundColor: C.green, borderColor: C.green },
+  filterText: { fontSize: 11, color: C.muted, fontWeight: "700" },
+  mapCta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 11,
+    backgroundColor: "#EAF1E4",
+    padding: 13,
+    borderRadius: 16,
   },
-  titleContainer: {
-    gap: Spacing.three,
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.six,
+  ai: {
+    backgroundColor: C.lime,
+    padding: 16,
+    borderRadius: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
-  centerText: {
-    textAlign: 'center',
+  discovery: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    padding: 11,
   },
-  pressed: {
-    opacity: 0.7,
-  },
-  linkButton: {
-    flexDirection: 'row',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.five,
-    justifyContent: 'center',
-    gap: Spacing.one,
-    alignItems: 'center',
-  },
-  sectionsWrapper: {
-    gap: Spacing.five,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-  },
-  collapsibleContent: {
-    alignItems: 'center',
-  },
-  imageTutorial: {
-    width: '100%',
-    aspectRatio: 296 / 171,
-    borderRadius: Spacing.three,
-    marginTop: Spacing.two,
-  },
-  imageReact: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
+  discoverEmoji: {
+    width: 48,
+    height: 48,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
