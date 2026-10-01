@@ -1,13 +1,15 @@
 import { AppText, AppTextInput } from "@/components/app-text";
 import { AppIcon } from "@/components/app-icon";
 import { Link, router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { C, Header, Surface, s } from '@/components/app-ui';
 import MapSurface from '@/components/map-surface';
 import type { MapPoint } from '@/components/map-surface.types';
-import { countryOptions, destinationOptions, suggestedRoutes } from '@/data/map-mock';
+import { countryOptions, destinationOptions } from '@/data/map-mock';
+import { tripsService } from '@/services/tripsService';
+import type { RouteSuggestionRecord } from '@/interface/trips';
 import { findNearby, searchAfrica, type PlaceResult } from '@/services/place-discovery';
 
 const categories = ['Hébergements', 'Restaurants', 'Culture', 'Nature', 'À faire'];
@@ -29,6 +31,7 @@ export default function MapScreen() {
   const [center, setCenter] = useState(africaCenter);
   const [mapZoom, setMapZoom] = useState(0);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
+  const [routeSuggestions, setRouteSuggestions] = useState<RouteSuggestionRecord[]>([]);
 
   const samplePoints: MapPoint[] = useMemo(() => destinationOptions.map((item) => ({ id: item.id, name: item.name, latitude: item.latitude, longitude: item.longitude })), []);
   const countryCities = selectedCountry ? destinationOptions.filter((place) => normalizeCountryName(place.country) === normalizeCountryName(selectedCountry)) : [];
@@ -43,27 +46,35 @@ export default function MapScreen() {
   const visiblePoints = mapPoints.length ? mapPoints : selectedCountry ? [] : samplePoints;
   const selectedOption = destinationOptions.find((item) => item.id === selected?.id);
 
+  useEffect(() => {
+    let active = true;
+    tripsService.fetchRouteSuggestions(selectedCountry ?? undefined)
+      .then((items) => { if (active) setRouteSuggestions(items); })
+      .catch(() => { if (active) setRouteSuggestions([]); });
+    return () => { active = false; };
+  }, [selectedCountry]);
+
   async function submitSearch() {
     if (!query.trim()) return;
-    setBusy(true); setMessage('Recherche dans le catalogue de démonstration…'); setNearby([]); setSelected(null); setSelectedCountry(null); setSelectedRoute(null); setCenter(africaCenter); setMapZoom(0);
+    setBusy(true); setMessage('Recherche des lieux dans l’API…'); setNearby([]); setSelected(null); setSelectedCountry(null); setSelectedRoute(null); setCenter(africaCenter); setMapZoom(0);
     try {
-      const found = searchAfrica(query);
+      const found = await searchAfrica(query);
       setSearchResults(found);
-      setMessage(found.length ? 'Choisis le bon lieu dans les résultats.' : 'Aucun résultat en Afrique. Essaie une ville, un pays ou un quartier.');
+      setMessage(found.length ? 'Résultats du catalogue API. Choisis un lieu.' : 'Aucun lieu correspondant dans le catalogue de l’API. Essaie une autre ville ou un quartier.');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Recherche de démonstration indisponible.');
+      setMessage(error instanceof Error ? error.message : 'La recherche API est indisponible.');
     } finally { setBusy(false); }
   }
 
   async function loadNearby(place: PlaceResult, activeCategory = category) {
-    setSelected(place); if (place.country) setSelectedCountry(countryOptions.find((item) => normalizeCountryName(item.name) === normalizeCountryName(place.country ?? ''))?.name ?? place.country); setCenter({ latitude: place.latitude, longitude: place.longitude }); setMapZoom(10); setSearchResults([]); setBusy(true); setMessage(`Suggestions de démonstration : ${activeCategory.toLowerCase()} autour de ${place.name}…`);
+    setSelected(place); if (place.country) setSelectedCountry(countryOptions.find((item) => normalizeCountryName(item.name) === normalizeCountryName(place.country ?? ''))?.name ?? place.country); setCenter({ latitude: place.latitude, longitude: place.longitude }); setMapZoom(10); setSearchResults([]); setBusy(true); setMessage(`Recherche de ${activeCategory.toLowerCase()} autour de ${place.name} dans l’API…`);
     try {
-      const found = findNearby(place.latitude, place.longitude, activeCategory, place.name);
+      const found = await findNearby(place.latitude, place.longitude, activeCategory, place.name);
       setNearby(found);
       setMessage(found.length ? `${found.length} lieux trouvés autour de ${place.name}.` : `Pas de résultat pour cette catégorie autour de ${place.name}.`);
     } catch (error) {
       setNearby([]);
-      setMessage(error instanceof Error ? error.message : 'Impossible d’afficher les suggestions locales.');
+      setMessage(error instanceof Error ? error.message : 'Impossible de charger les suggestions depuis l’API.');
     } finally { setBusy(false); }
   }
 
@@ -98,9 +109,22 @@ export default function MapScreen() {
   }
 
   function confirmTrip() {
-    const route = suggestedRoutes.find((item) => item.id === selectedRoute);
+    const route = routeSuggestions.find((item) => item.id === selectedRoute);
     const destination = route ? `${route.stops.join(' → ')}, ${route.country}` : selected ? `${selected.name}, ${selected.country ?? selected.address}` : selectedCountry ?? query;
-    router.replace({ pathname: '/create-trip', params: { destination } });
+    router.replace({
+      pathname: '/create-trip',
+      params: {
+        destination,
+        ...(route ? { routeStops: JSON.stringify(route.stops) } : {}),
+        ...(route ? { country: route.country } : {}),
+        ...(selected ? {
+          placeName: selected.name,
+          latitude: String(selected.latitude),
+          longitude: String(selected.longitude),
+          country: selected.country ?? '',
+        } : {}),
+      },
+    });
   }
 
   async function changeCategory(next: string) {
@@ -128,7 +152,7 @@ export default function MapScreen() {
           <AppTextInput value={query} onChangeText={setQuery} onSubmitEditing={() => void submitSearch()} returnKeyType="search" placeholder={mode === 'trip' ? 'Pays ou ville d’Afrique…' : 'Restaurant, ville, quartier…'} placeholderTextColor="#89938A" style={styles.searchInput} />
           <Pressable onPress={() => void submitSearch()} accessibilityRole="button" accessibilityLabel="Rechercher en Afrique"><AppText style={styles.searchAction}>Chercher</AppText></Pressable>
         </View>
-        <View style={styles.providerNote}><AppText style={styles.helper}>Recherche et suggestions locales de démonstration · aucune API de lieux.</AppText></View>
+        <View style={styles.providerNote}><AppText style={styles.helper}>Recherche et lieux proches chargés depuis l’API Amigo.</AppText></View>
 
         <View style={styles.mapFrame}>
           <MapSurface key={`${center.latitude.toFixed(3)}-${center.longitude.toFixed(3)}-${mapZoom}`} latitude={center.latitude} longitude={center.longitude} zoom={mapZoom} points={visiblePoints} selectedId={selected?.id} onSelect={(point) => { const place = nearby.find((item) => item.id === point.id) ?? searchResults.find((item) => item.id === point.id); const city = destinationOptions.find((item) => item.id === point.id); if (place) chooseSearchResult(place); else if (city) chooseSuggestion(city.id); }} />
@@ -182,13 +206,13 @@ export default function MapScreen() {
 
         {mode === 'trip' && <>
           <View style={styles.adviceCard}><AppIcon name="explore" size={20} /><View style={{ flex: 1 }}><AppText style={styles.adviceTitle}>Conseils pour le pays choisi</AppText><AppText style={styles.adviceText}>Vérifie les zones déconseillées, les formalités d’entrée et les consignes santé auprès des autorités de ton pays. Les avis varient selon ta nationalité et changent régulièrement.</AppText><Link href="https://www.diplomatie.gouv.fr/fr/conseils-aux-voyageurs/" style={styles.sourceLink}>France Diplomatie · Conseils aux voyageurs ↗</Link></View></View>
-          {suggestedRoutes.filter((route) => !selectedCountry || route.country === selectedCountry).length > 0 && <><View style={styles.sectionHead}><AppText style={styles.sectionTitle}>{selectedCountry ? `Idées de trajets au ${selectedCountry}` : 'Idées de trajets'}</AppText><AppText style={styles.sectionHint}>DÉMO</AppText></View>
-          {suggestedRoutes.filter((route) => !selectedCountry || route.country === selectedCountry).map((route) => <Pressable key={route.id} onPress={() => setSelectedRoute(selectedRoute === route.id ? null : route.id)}><Surface style={[styles.routeCard, selectedRoute === route.id && styles.routeSelected]}><View style={[styles.routeEmoji, { backgroundColor: route.tint }]}><AppIcon name={route.emoji} size={22} /></View><View style={{ flex: 1, gap: 4 }}><AppText style={styles.routeName}>{route.name}</AppText><AppText style={styles.routeSubtitle}>{route.subtitle}</AppText><AppText style={styles.routeMeta}>{route.days}  ·  {route.distance}  ·  {route.stops.length} étapes</AppText></View><View style={[styles.radio, selectedRoute === route.id && styles.radioOn]}>{selectedRoute === route.id && <View style={styles.radioDot} />}</View></Surface></Pressable>)}</>}
+          {routeSuggestions.length > 0 && <><View style={styles.sectionHead}><AppText style={styles.sectionTitle}>{selectedCountry ? `Idées de trajets au ${selectedCountry}` : 'Idées de trajets'}</AppText><AppText style={styles.sectionHint}>API AMIGO</AppText></View>
+          {routeSuggestions.map((route) => <Pressable key={route.id} onPress={() => setSelectedRoute(selectedRoute === route.id ? null : route.id)}><Surface style={[styles.routeCard, selectedRoute === route.id && styles.routeSelected]}><View style={[styles.routeEmoji, { backgroundColor: route.tint }]}><AppText style={{ fontSize: 22 }}>{route.emoji}</AppText></View><View style={{ flex: 1, gap: 4 }}><AppText style={styles.routeName}>{route.name}</AppText><AppText style={styles.routeSubtitle}>{route.subtitle}</AppText><AppText style={styles.routeMeta}>{route.days}  ·  {route.distance}  ·  {route.stops.length} étapes</AppText></View><View style={[styles.radio, selectedRoute === route.id && styles.radioOn]}>{selectedRoute === route.id && <View style={styles.radioDot} />}</View></Surface></Pressable>)}</>}
           <Pressable onPress={confirmTrip} disabled={!selectedCountry && !selected && !selectedRoute} style={[s.button, !selectedCountry && !selected && !selectedRoute && styles.disabledButton]}><AppText style={s.buttonText}>{selectedRoute ? 'Créer ce voyage' : selected ? `Créer un voyage vers ${selected.name}` : selectedCountry ? `Créer un voyage au ${selectedCountry}` : 'Choisis d’abord un pays'}  →</AppText></Pressable>
         </>}
 
         {mode === 'outing' && <Pressable onPress={() => selected && router.push({ pathname: '/create-outing', params: { place: `${selected.name}, ${selected.country ?? selected.address}`, latitude: String(selected.latitude), longitude: String(selected.longitude) } })} disabled={!selected} style={[s.button, !selected && styles.disabledButton]}><AppText style={s.buttonText}>{selected ? `Inviter des amis à ${selected.name} →` : 'Choisis un lieu pour organiser une sortie'}</AppText></Pressable>}
-        <AppText style={styles.disclaimer}>Les lieux, trajets et informations affichés sont des exemples de démonstration.</AppText>
+        <AppText style={styles.disclaimer}>Les informations des lieux viennent de l’API; vérifie les détails avant de réserver.</AppText>
       </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

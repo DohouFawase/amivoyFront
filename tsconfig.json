@@ -3,6 +3,16 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
+      "@/actions/*": ["./actions/*"],
+      "@/config/*": ["./config/*"],
+      "@/hooks/*": ["./hooks/*", "./src/hooks/*"],
+      "@/interface/*": ["./interface/*"],
+      "@/providers/*": ["./providers/*"],
+      "@/schemas/*": ["./schemas/*"],
+      "@/services/*": ["./services/*", "./src/services/*"],
+      "@/slice/*": ["./slice/*"],
+      "@/stores/*": ["./stores/*"],
+      "@/types/*": ["./types/*"],
       "@/*": [
         "./src/*"
       ],

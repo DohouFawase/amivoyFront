@@ -1,43 +1,62 @@
-import { AppIcon } from "@/components/app-icon";
 import { BrandLogo } from "@/components/brand-logo";
-import { AppText, AppTextInput } from "@/components/app-text";
-import { getDemoUser, setDemoUser } from "@/data/demo-session";
-import { router } from "expo-router";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link, router, useLocalSearchParams } from "expo-router";
+import { Controller, useForm } from "react-hook-form";
 import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
+import { loginAccount, verifyTwoFactorLogin } from "@/actions/authActions";
+import { AppIcon } from "@/components/app-icon";
+import { AppText } from "@/components/app-text";
+import { AuthInput } from "@/components/auth-input";
 import { C, Header, Page, Surface } from "@/components/app-ui";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { loginSchema, type LoginFormValues } from "@/schemas/authSchemas";
+import { clearPendingTwoFactor } from "@/slice/auth/authSlice";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const params = useLocalSearchParams<{ inviteCode?: string }>();
+  const dispatch = useAppDispatch();
+  const { error, pendingTwoFactorEmail, requestStatus } = useAppSelector(
+    (state) => state.auth,
+  );
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [twoFactorError, setTwoFactorError] = useState("");
+  const { control, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
-  function finishDemoLogin(nextEmail?: string) {
-    const prior = getDemoUser();
-    setDemoUser({
-      ...prior,
-      email: nextEmail || email.trim() || prior.email,
-      firstName: prior.firstName || (email.split("@")[0] || "Samira"),
-    });
-    router.replace("/home");
-  }
-
-  function login() {
-    if (!email.trim() || !password) {
-      setMessage("Saisis un e-mail et un mot de passe de démonstration.");
+  const submitLogin = handleSubmit(async (values) => {
+    try {
+      const result = await dispatch(loginAccount(values)).unwrap();
+      if (result.kind === "authenticated") {
+        router.replace(typeof params.inviteCode === "string" ? ({ pathname: "/invite/[code]", params: { code: params.inviteCode } } as never) : "/home");
+      }
+    } catch {
       return;
     }
-    finishDemoLogin();
-  }
+  });
 
-  function socialLogin(provider: "Facebook" | "Apple") {
-    // Les boutons illustrent le parcours, sans authentification externe.
-    finishDemoLogin(getDemoUser().email || `${provider.toLowerCase()}@amivoy.demo`);
+  async function submitTwoFactor() {
+    setTwoFactorError("");
+    if (!pendingTwoFactorEmail || !/^\d{6}$/.test(twoFactorCode)) {
+      setTwoFactorError("Saisis le code à 6 chiffres envoyé par e-mail.");
+      return;
+    }
+
+    try {
+      await dispatch(
+        verifyTwoFactorLogin({ email: pendingTwoFactorEmail, code: twoFactorCode }),
+      ).unwrap();
+      router.replace(typeof params.inviteCode === "string" ? ({ pathname: "/invite/[code]", params: { code: params.inviteCode } } as never) : "/home");
+    } catch {
+      return;
+    }
   }
 
   return (
     <Page>
-      <Header back title="Connexion" />
+      <Header title="Connexion" />
       <View style={st.travelMotif} accessibilityElementsHidden>
         <View style={st.routeIcon}>
           <AppIcon name="map" size={17} color={C.green} />
@@ -66,90 +85,74 @@ export default function Login() {
         Tes voyages et sorties reprennent ici.
       </AppText>
 
-      <Surface style={st.form}>
-        <AppText style={st.label}>ADRESSE E-MAIL</AppText>
-        <AppTextInput
-          style={st.input}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          placeholder="toi@exemple.com"
-        />
-        <AppText style={st.label}>MOT DE PASSE</AppText>
-        <AppTextInput
-          style={st.input}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholder="Mot de passe de démo"
-        />
-        <Pressable
-          onPress={() =>
-            setMessage(
-              "Réinitialisation simulée : aucun e-mail ne sera envoyé dans cette démo.",
-            )
-          }
-          style={st.forgot}
-        >
-          <AppText style={st.link}>Mot de passe oublié ?</AppText>
-        </Pressable>
-        <Pressable onPress={login} style={st.submit}>
-          <AppText style={st.submitText}>Se connecter</AppText>
-          <AppIcon name="arrow" size={17} color="#FFFFFF" />
-        </Pressable>
-      </Surface>
-
-      {!!message && <AppText style={st.message}>{message}</AppText>}
-      <View style={st.divider}>
-        <View style={st.dividerLine} />
-        <AppText style={st.or}>OU CONTINUER AVEC</AppText>
-        <View style={st.dividerLine} />
-      </View>
-      <View style={st.socialRow}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Continuer avec Facebook (démo)"
-          onPress={() => socialLogin("Facebook")}
-          style={({ pressed }) => [st.socialOption, pressed && st.socialPressed]}
-        >
-          <View style={st.socialIconCircle}>
-            <AppText style={st.facebookIcon}>f</AppText>
-          </View>
-          <AppText style={st.socialLabel}>Facebook</AppText>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Continuer avec e-mail"
-          onPress={login}
-          style={({ pressed }) => [st.socialOption, pressed && st.socialPressed]}
-        >
-          <View style={st.socialIconCircle}>
-            <AppIcon name="mail" size={20} color={C.ink} />
-          </View>
-          <AppText style={st.socialLabel}>E-mail</AppText>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Continuer avec Apple (démo)"
-          onPress={() => socialLogin("Apple")}
-          style={({ pressed }) => [st.socialOption, pressed && st.socialPressed]}
-        >
-          <View style={st.socialIconCircle}>
-            <AppIcon name="apple" size={20} color={C.ink} />
-          </View>
-          <AppText style={st.socialLabel}>Apple</AppText>
-        </Pressable>
-      </View>
-      <AppText style={st.demoNote}>
-        Démonstration : Facebook et Apple ne sont pas connectés à leurs services.
-      </AppText>
-      <Pressable onPress={() => router.push("/onboarding")}>
-        <AppText style={st.signup}>
-          Pas encore de profil ?{" "}
-          <AppText style={st.link}>Créer un profil démo</AppText>
-        </AppText>
-      </Pressable>
+      {pendingTwoFactorEmail ? (
+        <Surface style={st.form}>
+          <AppText style={st.subtitle}>Un code a été envoyé à {pendingTwoFactorEmail}.</AppText>
+          <AuthInput
+            label="CODE À 6 CHIFFRES"
+            value={twoFactorCode}
+            onChangeText={setTwoFactorCode}
+            keyboardType="number-pad"
+            maxLength={6}
+            placeholder="000000"
+          />
+          {!!(twoFactorError || error) && <AppText style={st.message}>{twoFactorError || error}</AppText>}
+          <Pressable onPress={() => void submitTwoFactor()} disabled={requestStatus === "loading"} style={[st.submit, requestStatus === "loading" && st.disabled]}>
+            <AppText style={st.submitText}>{requestStatus === "loading" ? "Vérification…" : "Vérifier le code"}</AppText>
+          </Pressable>
+          <Pressable onPress={() => dispatch(clearPendingTwoFactor())} style={st.cancelTwoFactor}>
+            <AppText style={st.link}>Utiliser un autre compte</AppText>
+          </Pressable>
+        </Surface>
+      ) : (
+        <>
+          <Surface style={st.form}>
+            <Controller
+              control={control}
+              name="email"
+              render={({ field }) => (
+                <AuthInput
+                  label="ADRESSE E-MAIL"
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  onBlur={field.onBlur}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  placeholder="toi@exemple.com"
+                  error={errors.email?.message}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="password"
+              render={({ field }) => (
+                <AuthInput
+                  label="MOT DE PASSE"
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  onBlur={field.onBlur}
+                  secureTextEntry
+                  placeholder="Ton mot de passe"
+                  error={errors.password?.message}
+                />
+              )}
+            />
+            <Link href={"/forgot-password" as never} asChild>
+              <Pressable style={st.forgot}>
+                <AppText style={st.link}>Mot de passe oublié ?</AppText>
+              </Pressable>
+            </Link>
+            {!!error && <AppText style={st.message}>{error}</AppText>}
+            <Pressable onPress={submitLogin} disabled={requestStatus === "loading"} style={[st.submit, requestStatus === "loading" && st.disabled]}>
+              <AppText style={st.submitText}>{requestStatus === "loading" ? "Connexion…" : "Se connecter"}</AppText>
+            </Pressable>
+          </Surface>
+          <Pressable onPress={() => router.push({ pathname: "/register", params: { inviteCode: params.inviteCode } } as never)} style={st.signup}>
+            <AppText style={st.signupText}>Pas encore de compte ? <AppText style={st.link}>Créer un compte</AppText></AppText>
+          </Pressable>
+        </>
+      )}
     </Page>
   );
 }
@@ -278,4 +281,7 @@ const st = StyleSheet.create({
   socialLabel: { fontSize: 9, color: C.muted, fontWeight: "700" },
   demoNote: { textAlign: "center", fontSize: 9, lineHeight: 14, color: C.muted },
   signup: { textAlign: "center", color: C.muted, fontSize: 11, padding: 9 },
+  signupText: { textAlign: "center", color: C.muted, fontSize: 11 },
+  disabled: { opacity: 0.55 },
+  cancelTwoFactor: { alignSelf: "center", paddingVertical: 6 },
 });

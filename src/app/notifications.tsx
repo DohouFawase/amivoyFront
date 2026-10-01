@@ -1,136 +1,95 @@
-import { AppText } from "@/components/app-text";
-import { AppIcon } from "@/components/app-icon";
+import { useEffect, useState } from "react";
+import { Link, router } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
-import { Link } from "expo-router";
-import { useState } from "react";
 import {
-  BottomBar,
-  C,
-  Header,
-  Page,
-  SectionTitle,
-  Surface,
-} from "@/components/app-ui";
-const notes = [
-  {
-    icon: "♡",
-    color: "#F5E1DA",
-    title: "Mariam a commenté une activité",
-    body: "« On pourrait ajouter une pause glace ici »",
-    time: "Il y a 12 min",
-    unread: true,
-  },
-  {
-    icon: "payments",
-    color: "#E8EFDD",
-    title: "Nouvelle dépense ajoutée",
-    body: "Amadou a payé 15 750 FCFA au café Zenith.",
-    time: "Il y a 1 h",
-    unread: true,
-  },
-  {
-    icon: "✦",
-    color: "#F5EED8",
-    title: "Un souvenir a été ajouté",
-    body: "Yann a partagé une photo dans le carnet de Porto.",
-    time: "Hier",
-    unread: false,
-  },
-  {
-    icon: "✓",
-    color: "#E3E9EE",
-    title: "Le sondage est terminé",
-    body: "La visite de Livraria Lello est confirmée !",
-    time: "Hier",
-    unread: false,
-  },
-];
+  deleteNotification,
+  fetchNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from "@/actions/tripActions";
+import { AppIcon } from "@/components/app-icon";
+import { AppText } from "@/components/app-text";
+import { BottomBar, C, Header, Page, SectionTitle, Surface } from "@/components/app-ui";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { tripsService } from "@/services/tripsService";
+
 export default function Notifications() {
-  const [read, setRead] = useState(false);
+  const dispatch = useAppDispatch();
+  const { notifications, error, requestStatus } = useAppSelector((state) => state.trips);
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
+  const [selectedDetail, setSelectedDetail] = useState("");
+
+  useEffect(() => {
+    void dispatch(fetchNotifications());
+  }, [dispatch]);
+
+  async function openNotification(id: string, read: boolean, data: Record<string, unknown> | null) {
+    try { const detail = await tripsService.fetchNotification(id); setSelectedDetail(`${detail.title} · ${detail.category} · ${detail.created_at}`); } catch { setSelectedDetail("Le détail de cette notification n’a pas pu être chargé."); }
+    if (!read) await dispatch(markNotificationRead(id));
+    const href = data?.href;
+    if (typeof href === "string" && href.startsWith("/")) router.push(href as never);
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: C.cream }}>
       <Page>
         <Header
           title="Notifications"
-          right={
-            <Pressable onPress={() => setRead(true)}><AppText style={{ fontSize: 10, color: C.green, fontWeight: "800" }}>Tout lire</AppText></Pressable>
-          }
+          right={unreadCount > 0 ? (
+            <Pressable onPress={() => void dispatch(markAllNotificationsRead())} accessibilityRole="button" accessibilityLabel="Tout marquer comme lu">
+              <AppText style={styles.markAll}>Tout lire</AppText>
+            </Pressable>
+          ) : undefined}
         />
-        <AppText style={{ fontSize: 28, fontWeight: "900", color: C.ink }}>
-          À ne pas manquer.
-        </AppText>
-        <AppText style={{ fontSize: 12, color: C.muted, marginTop: -13 }}>
-          Les nouvelles de ta bande et de tes voyages.
-        </AppText>
-        <Link href={"/activity" as any} style={{ textAlign: "center", padding: 12, fontSize: 11, color: C.green, fontWeight: "800" }}>Voir le fil du groupe →</Link>
-        <SectionTitle title="Aujourd’hui" />
-        <View style={{ gap: 9 }}>
-          {notes.slice(0, 2).map((n, i) => (
-            <Surface
-              key={n.title}
-              style={[st.note, n.unread && !read && { borderColor: "#D9E6CB" }]}
-            >
-              <View style={[st.icon, { backgroundColor: n.color }]}>
-                <AppIcon name={n.icon} size={18} color={C.green} />
+        <AppText style={styles.heading}>À ne pas manquer.</AppText>
+        <AppText style={styles.subtitle}>Les nouvelles de ta bande et de tes voyages.</AppText>
+        <Link href="/activity" style={styles.activityLink}>Voir le fil du groupe →</Link>
+        <SectionTitle title="Tes notifications" action={`${unreadCount} non lue(s)`} />
+        {!!error && <AppText style={styles.error}>{error}</AppText>}
+        {!!selectedDetail && <Surface><AppText style={styles.body}>{selectedDetail}</AppText></Surface>}
+        {notifications.map((notification) => (
+          <Pressable key={notification.id} onPress={() => void openNotification(notification.id, notification.read, notification.data)}>
+            <Surface style={[styles.note, !notification.read && styles.unread]}>
+              <View style={[styles.icon, { backgroundColor: notification.read ? "#F0F2EC" : "#E8EFDD" }]}>
+                <AppIcon name="group" size={18} color={C.green} />
               </View>
-              <View style={{ flex: 1, gap: 4 }}>
-                <AppText style={{ fontSize: 12, fontWeight: "800", color: C.ink }}>
-                  {n.title}
-                </AppText>
-                <AppText style={{ fontSize: 11, color: C.muted, lineHeight: 16 }}>
-                  {n.body}
-                </AppText>
-                <AppText style={{ fontSize: 9, color: "#9AA39A" }}>{n.time}</AppText>
+              <View style={styles.copy}>
+                <AppText style={styles.title}>{notification.title}</AppText>
+                <AppText style={styles.body}>{notification.message || notification.body}</AppText>
+                <AppText style={styles.time}>{notification.time ?? new Date(notification.created_at).toLocaleString()}</AppText>
               </View>
-              {n.unread && !read && <View style={st.dot} />}
+              {!notification.read && <View style={styles.dot} />}
+              <Pressable onPress={() => void dispatch(deleteNotification(notification.id))} accessibilityRole="button" accessibilityLabel="Supprimer cette notification" style={styles.delete}>
+                <AppText style={styles.deleteText}>×</AppText>
+              </Pressable>
             </Surface>
-          ))}
-        </View>
-        <SectionTitle title="Cette semaine" />
-        <View style={{ gap: 9 }}>
-          {notes.slice(2).map((n) => (
-            <Surface key={n.title} style={st.note}>
-              <View style={[st.icon, { backgroundColor: n.color }]}>
-                <AppIcon name={n.icon} size={18} color={C.green} />
-              </View>
-              <View style={{ flex: 1, gap: 4 }}>
-                <AppText style={{ fontSize: 12, fontWeight: "800", color: C.ink }}>
-                  {n.title}
-                </AppText>
-                <AppText style={{ fontSize: 11, color: C.muted, lineHeight: 16 }}>
-                  {n.body}
-                </AppText>
-                <AppText style={{ fontSize: 9, color: "#9AA39A" }}>{n.time}</AppText>
-              </View>
-            </Surface>
-          ))}
-        </View>
-        <Link href="/settings" style={{ textAlign: "center", padding: 14, fontSize: 11, color: C.green, fontWeight: "800" }}>Gérer mes préférences de notification ›</Link>
+          </Pressable>
+        ))}
+        {requestStatus === "loading" && notifications.length === 0 && <AppText style={styles.body}>Chargement…</AppText>}
+        {requestStatus !== "loading" && !error && notifications.length === 0 && (
+          <Surface style={styles.empty}><AppIcon name="bell" size={26} /><AppText style={styles.title}>Aucune notification</AppText><AppText style={styles.body}>Les nouvelles de tes groupes apparaîtront ici.</AppText></Surface>
+        )}
+        <Link href="/settings" style={styles.activityLink}>Gérer mes préférences de notification ›</Link>
       </Page>
       <BottomBar active="notifications" />
     </View>
   );
 }
-const st = StyleSheet.create({
-  note: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 11,
-    padding: 13,
-  },
-  icon: {
-    width: 39,
-    height: 39,
-    borderRadius: 13,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: C.green,
-    marginTop: 4,
-  },
-  settings: { alignItems: "center", padding: 14 },
+const styles = StyleSheet.create({
+  heading: { fontSize: 27, fontWeight: "900", color: C.ink },
+  subtitle: { fontSize: 11, color: C.muted },
+  markAll: { fontSize: 10, color: C.green, fontWeight: "900" },
+  activityLink: { textAlign: "center", padding: 12, fontSize: 11, color: C.green, fontWeight: "800" },
+  note: { flexDirection: "row", alignItems: "flex-start", gap: 11, padding: 13 },
+  unread: { borderWidth: 1, borderColor: "#D9E6CB" },
+  icon: { width: 39, height: 39, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  copy: { flex: 1, gap: 4 },
+  title: { fontSize: 12, fontWeight: "800", color: C.ink },
+  body: { fontSize: 11, color: C.muted, lineHeight: 16 },
+  time: { fontSize: 9, color: "#9AA39A" },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: C.green, marginTop: 4 },
+  delete: { width: 28, height: 28, alignItems: "center", justifyContent: "center" },
+  deleteText: { fontSize: 18, color: C.muted },
+  empty: { alignItems: "center", gap: 8, padding: 20 },
+  error: { color: "#A7493C", fontSize: 11, fontWeight: "800" },
 });

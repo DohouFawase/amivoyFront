@@ -1,7 +1,7 @@
-import { AppText } from "@/components/app-text";
+import { AppText, AppTextInput } from "@/components/app-text";
 import { AppIcon } from "@/components/app-icon";
 import { Link, router, useLocalSearchParams } from "expo-router";
-import { ImageBackground, Pressable, StyleSheet, View } from "react-native";
+import { Alert, ImageBackground, Pressable, StyleSheet, View } from "react-native";
 import {
   BottomBar,
   C,
@@ -10,23 +10,123 @@ import {
   SectionTitle,
   Surface,
 } from "@/components/app-ui";
-import { expenses, itinerary, trips } from "@/data/mock";
+import { trips } from "@/data/mock";
 import { formatXof } from "@/data/currency";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchTrip } from "@/actions/tripActions";
+import { tripsService } from "@/services/tripsService";
+import type { ActivityRecord, BudgetLineRecord, BudgetRecord, TripPlaceRecord } from "@/interface/trips";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 export default function TripDetail() {
   const [inviteNotice, setInviteNotice] = useState(false);
+  const [editingTrip, setEditingTrip] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDestination, setEditDestination] = useState("");
+  const [editDates, setEditDates] = useState("");
+  const [editBudget, setEditBudget] = useState("");
+  const [editVisibility, setEditVisibility] = useState<"private" | "public">("private");
+  const [tripBusy, setTripBusy] = useState(false);
+  const [tripActionError, setTripActionError] = useState("");
+  const [stops, setStops] = useState<TripPlaceRecord[]>([]);
+  const [activities, setActivities] = useState<ActivityRecord[]>([]);
+  const [budgets, setBudgets] = useState<BudgetRecord[]>([]);
+  const [budgetLines, setBudgetLines] = useState<BudgetLineRecord[]>([]);
+  const dispatch = useAppDispatch();
+  const { trips: apiTrips, requestStatus, error } = useAppSelector((state) => state.trips);
   const { id, destination, title } = useLocalSearchParams<{ id: string; destination?: string; title?: string }>();
   const isDraft = id === 'draft';
+  useEffect(() => {
+    if (isDraft) return;
+    void dispatch(fetchTrip(id));
+    void Promise.all([
+      tripsService.fetchTripPlaces(id),
+      tripsService.fetchActivities(id),
+      tripsService.fetchBudgets(),
+      tripsService.fetchBudgetLines(),
+    ]).then(([tripStops, tripActivities, allBudgets, allLines]) => {
+      setStops(tripStops);
+      setActivities(tripActivities);
+      const tripBudgetIds = new Set(allBudgets.filter((item) => item.trip_id === id).map((item) => item.id));
+      setBudgets(allBudgets.filter((item) => item.trip_id === id));
+      setBudgetLines(allLines.filter((item) => tripBudgetIds.has(item.budget_id)));
+    }).catch(() => undefined);
+  }, [dispatch, id, isDraft]);
+  async function saveTripChanges() {
+    if (!apiTrip || tripBusy) return;
+    const cleanBudget = editBudget.trim().replace(/\s/g, "");
+    const budgetValue = cleanBudget ? Number(cleanBudget) : null;
+    if (!editTitle.trim() || !editDestination.trim()) { setTripActionError("Le nom et la destination sont obligatoires."); return; }
+    if (cleanBudget && (!Number.isFinite(budgetValue) || budgetValue! < 0)) { setTripActionError("Saisis un budget valide en XOF."); return; }
+    setTripBusy(true);
+    try {
+      await tripsService.updateTrip(apiTrip.id, {
+        title: editTitle.trim(),
+        destination_label: editDestination.trim(),
+        display_dates: editDates.trim() || null,
+        planned_budget: budgetValue,
+        visibility: editVisibility,
+      });
+      await dispatch(fetchTrip(apiTrip.id)).unwrap();
+      setEditingTrip(false); setTripActionError("");
+    } catch { setTripActionError("Les modifications du voyage n’ont pas pu être enregistrées. Vérifie que tu en es organisateur."); }
+    finally { setTripBusy(false); }
+  }
+
+  function beginEditTrip() {
+    if (!apiTrip) return;
+    setEditTitle(apiTrip.title || apiTrip.name);
+    setEditDestination(apiTrip.destination_label ?? "");
+    setEditDates(apiTrip.display_dates ?? apiTrip.dates ?? "");
+    setEditBudget(String(apiTrip.planned_budget ?? ""));
+    setEditVisibility(apiTrip.visibility ?? "private");
+    setEditingTrip(true); setTripActionError("");
+  }
+
+  function confirmDeleteTrip() {
+    if (!apiTrip) return;
+    Alert.alert("Supprimer ce voyage ?", `« ${apiTrip.title || apiTrip.name} » et son itinéraire seront supprimés.`, [
+      { text: "Annuler", style: "cancel" },
+      { text: "Supprimer", style: "destructive", onPress: () => { void (async () => {
+        setTripBusy(true);
+        try { await tripsService.deleteTrip(apiTrip.id); router.replace("/my-trips"); }
+        catch { setTripActionError("Le voyage n’a pas pu être supprimé. Vérifie que tu en es organisateur."); }
+        finally { setTripBusy(false); }
+      })(); } },
+    ]);
+  }
+
   const draftDestination = typeof destination === 'string' ? destination : 'Destination à choisir';
   const draftTemplate = /bénin|benin/i.test(draftDestination) ? trips.find((item) => item.id === 'cotonou')! : trips[0];
-  const trip = isDraft ? { ...draftTemplate, id: 'draft', title: typeof title === 'string' ? title : `Voyage à ${draftDestination}`, destination: draftDestination, dates: 'Dates à organiser', status: 'À préparer' } : trips.find((t) => t.id === id) ?? trips[0];
+  const apiTrip = apiTrips.find((item) => item.id === id);
+  const trip = isDraft
+    ? { ...draftTemplate, id: 'draft', title: typeof title === 'string' ? title : `Voyage à ${draftDestination}`, destination: draftDestination, dates: 'Dates à organiser', status: 'À préparer' }
+    : apiTrip
+      ? {
+          id: apiTrip.id,
+          title: apiTrip.title,
+          destination: apiTrip.destination ?? 'Destination à organiser',
+          dates: apiTrip.dates ?? 'Dates à organiser',
+          days: apiTrip.days ?? 1,
+          people: apiTrip.people,
+          image: apiTrip.image ?? 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=85',
+          color: apiTrip.color ?? '#789477',
+          spent: apiTrip.spent ?? 0,
+          budget: apiTrip.budget,
+          next: apiTrip.next ?? 'À organiser',
+          status: apiTrip.status ?? 'À préparer',
+          circleName: apiTrip.circleName,
+        }
+      : null;
+  if (!trip) {
+    return <Page><Header back title="Détail du voyage" /><AppText style={{ color: C.muted }}>{requestStatus === 'loading' ? 'Chargement du voyage…' : error ?? 'Voyage introuvable ou accès refusé.'}</AppText></Page>;
+  }
   return (
     <View style={{ flex: 1, backgroundColor: C.cream }}>
       <Page>
         <Header
           back
           title="Détail du voyage"
-          right={<AppText style={{ fontSize: 19 }}>•••</AppText>}
+          right={!isDraft ? <Pressable onPress={beginEditTrip} accessibilityRole="button" accessibilityLabel="Modifier le voyage"><AppText style={{ color: C.green, fontSize: 12, fontWeight: "900" }}>Modifier</AppText></Pressable> : undefined}
         />
         <ImageBackground
           source={{ uri: trip.image }}
@@ -42,6 +142,16 @@ export default function TripDetail() {
             </AppText>
           </View>
         </ImageBackground>
+        {!!tripActionError && <AppText accessibilityRole="alert" style={{ color: "#A7493C", fontSize: 11, fontWeight: "800" }}>{tripActionError}</AppText>}
+        {editingTrip && !isDraft && <Surface style={{ gap: 9 }}>
+          <AppText style={{ fontSize: 13, fontWeight: "900", color: C.ink }}>Modifier le voyage</AppText>
+          <AppTextInput value={editTitle} onChangeText={setEditTitle} placeholder="Nom du voyage" style={x.editInput} />
+          <AppTextInput value={editDestination} onChangeText={setEditDestination} placeholder="Destination" style={x.editInput} />
+          <AppTextInput value={editDates} onChangeText={setEditDates} placeholder="Dates affichées" style={x.editInput} />
+          <AppTextInput value={editBudget} onChangeText={setEditBudget} keyboardType="numeric" placeholder="Budget prévu en XOF" style={x.editInput} />
+          <Pressable onPress={() => setEditVisibility((value) => value === "private" ? "public" : "private")}><AppText style={{ color: C.green, fontSize: 11, fontWeight: "800" }}>Visibilité : {editVisibility === "private" ? "Privé" : "Public"} · toucher pour changer</AppText></Pressable>
+          <View style={{ flexDirection: "row", gap: 8 }}><Pressable disabled={tripBusy} onPress={() => void saveTripChanges()} style={x.editSave}><AppText style={x.editSaveText}>{tripBusy ? "Enregistrement…" : "Enregistrer"}</AppText></Pressable><Pressable onPress={() => setEditingTrip(false)} style={x.editCancel}><AppText style={{ color: C.muted, fontSize: 10, fontWeight: "800" }}>Annuler</AppText></Pressable><Pressable disabled={tripBusy} onPress={confirmDeleteTrip} style={x.editDelete}><AppText style={x.editDeleteText}>Supprimer</AppText></Pressable></View>
+        </Surface>}
         {isDraft ? (
           <Surface style={{ gap: 10, backgroundColor: '#EEF3E9' }}>
             <AppText style={{ fontSize: 12, fontWeight: '900', color: C.ink }}>Pays et destination retenus</AppText>
@@ -55,32 +165,12 @@ export default function TripDetail() {
         ) : (
           <>
         <View style={x.members}>
-          <View style={{ flexDirection: "row" }}>
-            {["A", "M", "Y", "S"].map((a, i) => (
-              <View
-                key={a}
-                style={[
-                  x.avatar,
-                  {
-                    marginLeft: i ? -7 : 0,
-                    backgroundColor: [
-                      "#D9E8D3",
-                      "#F2DCD2",
-                      "#DFE5F0",
-                      "#EAE2C8",
-                    ][i],
-                  },
-                ]}
-              >
-                <AppText style={{ fontWeight: "800", color: C.ink }}>{a}</AppText>
-              </View>
-            ))}
-          </View>
+          <View style={x.avatar}><AppIcon name="group" size={17} /></View>
           <AppText style={{ fontSize: 12, color: C.muted, flex: 1 }}>
-            {trip.circleName ? `${trip.circleName} · ${trip.people} personnes` : `${trip.people} amis dans ce voyage`}
+            {trip.circleName ? `${trip.circleName} · ${trip.people} voyageurs` : `${trip.people} voyageurs dans ce voyage`}
           </AppText>
           <Pressable onPress={() => { setInviteNotice(true); router.push("/circles"); }}>
-            <AppText style={{ color: C.green, fontWeight: "800" }}>{inviteNotice ? "Invités ✓" : "Inviter +"}</AppText>
+            <AppText style={{ color: C.green, fontWeight: "800" }}>{inviteNotice ? "Invitations ✓" : "Inviter +"}</AppText>
           </Pressable>
         </View>
         <View style={x.quickGrid}>
@@ -107,86 +197,31 @@ export default function TripDetail() {
           </>
         )}
         {!isDraft && <>
-        <SectionTitle
-          title="Aujourd’hui · Jour 3"
-          action="Tout voir"
-          href={`/trip/${trip.id}/itinerary`}
-        />
-        <View style={{ gap: 10 }}>
-          {itinerary.slice(0, 2).map((a) => (
-            <Surface key={a.time} style={x.event}>
-              <AppText style={x.time}>{a.time}</AppText>
-              <View
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 13,
-                  backgroundColor: "#EEF2E7",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <AppIcon name={a.icon} size={18} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <AppText style={{ fontSize: 13, fontWeight: "800", color: C.ink }}>
-                  {a.title}
-                </AppText>
-                <AppText style={{ fontSize: 10, color: C.muted, marginTop: 3 }}>
-                  {a.location}
-                </AppText>
-              </View>
-              <AppText style={{ color: C.green }}>›</AppText>
-            </Surface>
-          ))}
-        </View>
-        <SectionTitle
-          title="Le budget du groupe"
-          action="Détails"
-          href={`/trip/${trip.id}/budget`}
-        />
-        <Surface style={{ gap: 12 }}>
-          <View
-            style={{ flexDirection: "row", justifyContent: "space-between" }}
-          >
-            <AppText style={{ color: C.muted, fontSize: 12 }}>Dépensé</AppText>
-            <AppText style={{ fontSize: 12, fontWeight: "800", color: C.ink }}>
-              {formatXof(trip.spent)} / {formatXof(trip.budget)}
-            </AppText>
-          </View>
-          <View style={x.progress}>
-            <View
-              style={[
-                x.progressFill,
-                { width: `${Math.max(8, (trip.spent / trip.budget) * 100)}%` },
-              ]}
-            />
-          </View>
-          <AppText style={{ fontSize: 11, color: C.muted }}>
-            Encore {formatXof(trip.budget - trip.spent)} disponibles pour le groupe
-          </AppText>
-        </Surface>
-        <SectionTitle
-          title="Dernières dépenses"
-          action="Toutes"
-          href={`/trip/${trip.id}/budget`}
-        />
-        {expenses.slice(0, 2).map((e) => (
-          <Surface key={e.name} style={x.expense}>
-            <AppIcon name={e.emoji} size={22} />
+        <SectionTitle title="Étapes et activités" action="Itinéraire" href={`/trip/${trip.id}/itinerary`} />
+        {stops.slice(0, 2).map((stop) => (
+          <Surface key={stop.id} style={x.event}>
+            <AppIcon name="pin" size={18} />
             <View style={{ flex: 1 }}>
-              <AppText style={{ fontSize: 12, fontWeight: "800", color: C.ink }}>
-                {e.name}
-              </AppText>
-              <AppText style={{ fontSize: 10, color: C.muted, marginTop: 3 }}>
-                {e.who} a payé
-              </AppText>
+              <AppText style={{ fontSize: 13, fontWeight: "800", color: C.ink }}>{stop.city}{stop.country ? `, ${stop.country}` : ""}</AppText>
+              <AppText style={{ fontSize: 10, color: C.muted, marginTop: 3 }}>{activities.filter((activity) => activity.trip_place_id === stop.id).map((activity) => activity.title).join(" · ") || "Aucune activité ajoutée"}</AppText>
             </View>
-            <AppText style={{ fontWeight: "800", color: C.ink }}>
-              {formatXof(e.amount)}
-            </AppText>
           </Surface>
         ))}
+        {!stops.length && <AppText style={{ fontSize: 11, color: C.muted }}>Ajoute les villes de ton parcours dans l’itinéraire.</AppText>}
+        <SectionTitle title="Budget prévu" action="Détails" href={`/trip/${trip.id}/budget`} />
+        {(() => {
+          const budget = budgets.find((item) => item.trip_id === trip.id);
+          const total = budget?.total_planned ?? apiTrip?.planned_budget ?? 0;
+          const planned = budget ? budgetLines.filter((line) => line.budget_id === budget.id).reduce((sum, line) => sum + line.planned_amount, 0) : 0;
+          return <Surface style={{ gap: 10 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <AppText style={{ color: C.muted, fontSize: 12 }}>Total prévu</AppText>
+              <AppText style={{ fontSize: 12, fontWeight: "800", color: C.ink }}>{formatXof(total)}</AppText>
+            </View>
+            <View style={x.progress}><View style={[x.progressFill, { width: `${total > 0 ? Math.min(100, planned / total * 100) : 0}%` }]} /></View>
+            <AppText style={{ fontSize: 11, color: C.muted }}>{formatXof(planned)} répartis dans les lignes de budget. Aucun paiement n’est comptabilisé ici.</AppText>
+          </Surface>;
+        })()}
         </>}
       </Page>
       <BottomBar />
@@ -195,6 +230,8 @@ export default function TripDetail() {
 }
 const x = StyleSheet.create({
   heroImage: { height: 220, padding: 16, justifyContent: "space-between" },
+  editInput: { minHeight: 43, borderRadius: 11, borderWidth: 1, borderColor: C.line, backgroundColor: C.white, paddingHorizontal: 11, color: C.ink },
+  editSave: { minHeight: 40, paddingHorizontal: 12, borderRadius: 10, backgroundColor: C.green, justifyContent: "center" }, editSaveText: { color: C.white, fontSize: 10, fontWeight: "900" }, editCancel: { minHeight: 40, paddingHorizontal: 12, borderRadius: 10, backgroundColor: "#F1F2EE", justifyContent: "center" }, editDelete: { minHeight: 40, paddingHorizontal: 12, borderRadius: 10, backgroundColor: "#F8EAE5", justifyContent: "center" }, editDeleteText: { color: "#A7493C", fontSize: 10, fontWeight: "900" },
   scrim: {
     ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(20,30,24,.3)",

@@ -41,7 +41,8 @@
           "cameraPermission": "Amivoy utilise la caméra pour ajouter les photos de tes sorties.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

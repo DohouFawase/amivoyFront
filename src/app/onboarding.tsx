@@ -1,15 +1,10 @@
 import { AppIcon } from "@/components/app-icon";
-import { BrandLogo } from "@/components/brand-logo";
 import { AppText, AppTextInput } from "@/components/app-text";
-import { setDemoUser } from "@/data/demo-session";
-import { createCircle, suggestedFriends } from "@/data/circles";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   ImageBackground,
-  KeyboardAvoidingView,
   PanResponder,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -47,7 +42,7 @@ const slides = [
       "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=900&q=85",
     title: "Faisons connaissance.",
     description:
-      "Ton profil de démonstration reste enregistré dans cette session.",
+      "Ton profil sera relié à ton compte après vérification de ton e-mail.",
     icon: "camera",
   },
   {
@@ -55,7 +50,7 @@ const slides = [
       "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=900&q=85",
     title: "Ta bande, tes prochaines histoires.",
     description:
-      "Crée ton premier cercle et prépare vos prochaines sorties ensemble.",
+      "Tu pourras inviter tes proches après la création de ton compte.",
     icon: "group",
   },
 ];
@@ -68,8 +63,6 @@ export default function Onboarding() {
   const [email, setEmail] = useState("");
   const [country, setCountry] = useState("Bénin");
   const [selected, setSelected] = useState<string[]>(["Voyages", "Sorties"]);
-  const [circleName, setCircleName] = useState("Mes proches");
-  const [friends, setFriends] = useState<string[]>(["Amadou", "Mariam"]);
   const [error, setError] = useState("");
   const swipeResponder = useMemo(
     () =>
@@ -94,15 +87,16 @@ export default function Onboarding() {
   const photoHeight = Math.min(photoWidth * 0.84, compact ? 225 : 260);
 
   const finish = () => {
-    setDemoUser({
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      email: email.trim(),
-      country,
-      interests: selected,
-    });
-    createCircle(circleName || `Les proches de ${firstName.trim()}`, friends);
-    router.replace("/home");
+    router.replace({
+      pathname: "/register",
+      params: {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: email.trim(),
+        country,
+        interests: JSON.stringify(selected),
+      },
+    } as never);
   };
 
   const continueOnboarding = () => {
@@ -122,10 +116,6 @@ export default function Onboarding() {
 
   return (
     <Page scroll={false}>
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoiding}
-        behavior={Platform.OS === "ios" ? "padding" : Platform.OS === "android" ? "height" : undefined}
-      >
       <View style={styles.screen}>
         <View style={[styles.frame, { maxWidth: 500 }]}>
           <View
@@ -146,9 +136,14 @@ export default function Onboarding() {
                 <AppIcon name="back" size={17} color={C.ink} />
               </Pressable>
             ) : (
-              <BrandLogo compact style={styles.brandPosition} />
+              <View style={styles.brand}>
+                <View style={styles.brandMark}>
+                  <AppIcon name="✳" size={14} color={C.white} />
+                </View>
+                <AppText style={styles.brandName}>amivoy</AppText>
+              </View>
             )}
-            <Pressable onPress={() => router.replace("/home")} hitSlop={10}>
+            <Pressable onPress={() => router.replace("/login")} hitSlop={10}>
               <AppText style={styles.skip}>Passer</AppText>
             </Pressable>
           </View>
@@ -161,7 +156,6 @@ export default function Onboarding() {
             ]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
           >
             <View style={[styles.slideContent, { width: contentWidth }]}>
               <View
@@ -357,49 +351,9 @@ export default function Onboarding() {
 
               {step === 3 && (
                 <View style={styles.formSection}>
-                  <AppText style={styles.sectionLabel}>
-                    TON PREMIER CERCLE
-                  </AppText>
-                  <AppTextInput
-                    style={styles.input}
-                    value={circleName}
-                    onChangeText={setCircleName}
-                    placeholder="Nom du cercle"
-                    placeholderTextColor="#969A92"
-                  />
-                  <AppText style={styles.sectionLabel}>
-                    CHOISIS TES AMIS · DÉMO
-                  </AppText>
-                  <View style={styles.chips}>
-                    {suggestedFriends.map((friend) => (
-                      <Pressable
-                        key={friend}
-                        onPress={() =>
-                          setFriends((old) =>
-                            old.includes(friend)
-                              ? old.filter((item) => item !== friend)
-                              : [...old, friend],
-                          )
-                        }
-                        style={[
-                          styles.chip,
-                          friends.includes(friend) && styles.chipActive,
-                        ]}
-                      >
-                        <AppText
-                          style={[
-                            styles.chipText,
-                            friends.includes(friend) && styles.chipTextActive,
-                          ]}
-                        >
-                          {friends.includes(friend) ? "✓  " : "+  "}
-                          {friend}
-                        </AppText>
-                      </Pressable>
-                    ))}
-                  </View>
+                  <AppText style={styles.sectionLabel}>CRÉER TON COMPTE</AppText>
                   <AppText style={styles.demoNote}>
-                    Tu pourras créer d’autres cercles depuis ton profil.
+                    Ton prénom, ton e-mail, ton pays et tes centres d’intérêt seront associés à ton compte. Tu pourras ensuite retrouver les fonctions de groupe dans l’application.
                   </AppText>
                 </View>
               )}
@@ -426,7 +380,7 @@ export default function Onboarding() {
             </View>
             <Pressable style={styles.button} onPress={continueOnboarding}>
               <AppText style={styles.buttonText}>
-                {step === 3 ? "Créer mon cercle" : "Continuer"}
+                {step === 3 ? "Continuer vers l’inscription" : "Continuer"}
               </AppText>
               {step < 3 && <AppIcon name="arrow" size={17} color="#FFFFFF" />}
             </Pressable>
@@ -439,13 +393,11 @@ export default function Onboarding() {
           </View>
         </View>
       </View>
-      </KeyboardAvoidingView>
     </Page>
   );
 }
 
 const styles = StyleSheet.create({
-  keyboardAvoiding: { flex: 1 },
   screen: {
     flex: 1,
     width: "100%",
@@ -459,13 +411,27 @@ const styles = StyleSheet.create({
     backgroundColor: C.cream,
   },
   topbar: {
-    minHeight: 96,
-    paddingTop: 32,
+    minHeight: 54,
+    paddingTop: 8,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  brandPosition: { marginTop: 0 },
+  brand: { flexDirection: "row", alignItems: "center", gap: 8 },
+  brandMark: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    backgroundColor: C.green,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  brandName: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: C.ink,
+    letterSpacing: -0.5,
+  },
   skip: { fontSize: 12, fontWeight: "600", color: "#777A73" },
   backButton: {
     width: 34,
