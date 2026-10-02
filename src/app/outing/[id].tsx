@@ -142,13 +142,13 @@ export default function OutingDetail() {
     }
 
     const result = source === "camera"
-      ? await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.85 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.85 });
+      ? await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.75 })
+      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.75 });
 
     if (result.canceled || !result.assets[0]) return;
     const asset = result.assets[0];
-    if (asset.fileSize && asset.fileSize > 20 * 1024 * 1024) {
-      setLocalError("La photo doit faire 20 Mo maximum.");
+    if (asset.fileSize && asset.fileSize > 10 * 1024 * 1024) {
+      setLocalError("La photo doit faire 10 Mo maximum.");
       return;
     }
 

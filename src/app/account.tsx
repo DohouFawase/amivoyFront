@@ -92,7 +92,7 @@ export default function Account() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: true,
-      quality: 0.85,
+      quality: 0.75,
     });
 
     if (result.canceled || !result.assets[0]) return;

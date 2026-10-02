@@ -34,10 +34,10 @@ export default function Journal() {
   }, [id]);
 
   async function uploadTripPhoto() {
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.85 });
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.75 });
     if (result.canceled || !result.assets[0]) return;
     const asset = result.assets[0];
-    if (asset.fileSize && asset.fileSize > 20 * 1024 * 1024) { setError("La photo doit faire 20 Mo maximum."); return; }
+    if (asset.fileSize && asset.fileSize > 10 * 1024 * 1024) { setError("La photo doit faire 10 Mo maximum."); return; }
     setBusy(true);
     try { const photo = await tripsService.createTripPhoto({ trip_id: id, image: asset, caption: photoCaption.trim() || undefined }); setPhotos((xs) => [photo, ...xs]); setPhotoCaption(""); setError(""); }
     catch { setError("La photo n’a pas pu être envoyée au carnet."); }

@@ -1,7 +1,7 @@
 import "@/global.css";
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, type ErrorBoundaryProps } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useColorScheme } from "react-native";
+import { Pressable, StyleSheet, Text, View, useColorScheme } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { useFonts } from "expo-font";
@@ -9,6 +9,23 @@ import { ReduxProvider } from "@/providers/ReduxProvider";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { bootstrapAuth } from "@/actions/authActions";
 import { useEffect } from "react";
+
+export const unstable_settings = {
+  screenErrorBoundary: ScreenErrorBoundary,
+};
+
+function ScreenErrorBoundary({ retry }: ErrorBoundaryProps) {
+  return (
+    <View style={styles.errorContainer}>
+      <Text accessibilityRole="header" style={styles.errorTitle}>Cette page n’a pas pu s’afficher.</Text>
+      <Text style={styles.errorMessage}>Réessaie dans un instant. Tes autres pages restent accessibles.</Text>
+      <Pressable accessibilityRole="button" onPress={() => void retry()} style={styles.retryButton}>
+        <Text style={styles.retryButtonText}>Réessayer</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const scheme = useColorScheme();
@@ -88,3 +105,18 @@ function RootNavigator() {
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  errorContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    padding: 24,
+    backgroundColor: "#FCFBF7",
+  },
+  errorTitle: { color: "#133B2C", fontSize: 18, fontWeight: "700", textAlign: "center" },
+  errorMessage: { color: "#66736D", fontSize: 14, lineHeight: 21, textAlign: "center" },
+  retryButton: { marginTop: 8, borderRadius: 12, backgroundColor: "#133B2C", paddingHorizontal: 20, paddingVertical: 12 },
+  retryButtonText: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
+});
