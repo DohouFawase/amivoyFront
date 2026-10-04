@@ -1,7 +1,7 @@
 import { AppIcon } from "@/components/app-icon";
 import { AppText, AppTextInput } from "@/components/app-text";
 import { BottomBar, C, Header, Page, Surface } from "@/components/app-ui";
-import { useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useAppSelector } from "@/hooks/redux";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
@@ -177,6 +177,7 @@ export default function Itinerary() {
           <AppText style={st.formTitle}>Ajouter une étape</AppText>
           <AppTextInput value={city} onChangeText={(value) => { setCity(value); setSelectedPlace(null); setPlaceSuggestions([]); }} placeholder="Ville ou étape" style={st.input} />
           {placeSuggestions.map((place) => <Pressable key={place.id} onPress={() => { setSelectedPlace(place); setCity(place.name); setCountry(place.country ?? ""); setPlaceSuggestions([]); }} style={st.placeOption}><AppText style={st.stopName}>{place.name}</AppText><AppText style={st.sub}>{[place.region, place.country].filter(Boolean).join(" · ")}</AppText></Pressable>)}
+          {placeSuggestions.some((place) => place.source === "Geoapify") && <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}><Link href="https://www.geoapify.com/" style={st.sub}>Powered by Geoapify</Link><AppText style={st.sub}>· © OpenStreetMap contributors</AppText></View>}
           <View style={st.addRow}><AppTextInput value={country} onChangeText={setCountry} placeholder="Pays (facultatif)" style={[st.input, { flex: 1 }]} /><Pressable disabled={busy} onPress={() => void addStop()} style={st.addButton}><AppText style={st.addText}>Ajouter</AppText></Pressable></View>
         </Surface>
         <Pressable onPress={() => void suggestRoute()} style={st.routeButton}><AppIcon name="map" size={17} /><AppText style={st.routeButtonText}>Calculer l’ordre des étapes géolocalisées</AppText></Pressable>

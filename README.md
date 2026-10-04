@@ -78,8 +78,12 @@ Le projet utilise Expo SDK 57, React Native 0.86, Expo Router et TypeScript stri
 ### Carte et découverte
 
 - Carte adaptée au web et au mobile, avec recherche de destinations et propositions de lieux.
-- src/services/place-discovery.ts fournit actuellement des résultats locaux prédéfinis; ces propositions ne viennent pas d’un service de recherche en direct.
+- src/services/place-discovery.ts appelle les routes de recherche du backend Amigo pour les destinations et lieux proches.
 - La carte web s’appuie sur OpenStreetMap. Les images distantes de démonstration nécessitent une connexion Internet.
+
+### Recherche de lieux (backend Amigo)
+
+La recherche de destinations et les suggestions à proximité passent par le backend Amigo. Pour utiliser Geoapify, ajoute `GEOAPIFY_API_KEY` au fichier `amigo/.env` (la clé ne doit pas être placée dans l’application mobile), puis vide le cache de configuration Laravel avec `php artisan config:clear`. Sans clé, le backend conserve son catalogue local et le fournisseur OpenStreetMap existant. La carte elle-même garde son fournisseur natif/web actuel; Geoapify sert aux destinations et aux fiches d’établissements.
 
 ### Sorties entre amis
 

@@ -27,6 +27,7 @@ function mapSearchPlace(place: PlaceSearchRecord): PlaceResult | null {
     description: place.description || place.name,
     country: place.country ?? undefined,
     isCountry: place.isCountry,
+    source: place.source,
   };
 }
 

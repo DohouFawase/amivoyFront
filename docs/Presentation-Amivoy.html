@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Amivoy — Présentation du produit</title>
+<style>
+@page { size: A4; margin: 17mm 18mm 18mm; }
+* { box-sizing: border-box; }
+body { margin: 0; color: #20352b; font: 10.2pt/1.48 "Liberation Sans", Arial, sans-serif; }
+h1,h2,h3,p,ul,ol { margin-top: 0; }
+h1 { font-size: 30pt; line-height: 1.05; letter-spacing: -1.1pt; margin-bottom: 12pt; color: #133B2C; }
+h2 { color: #133B2C; font-size: 20pt; line-height: 1.15; letter-spacing: -.4pt; margin: 0 0 11pt; }
+h3 { color: #133B2C; font-size: 11.5pt; margin: 0 0 5pt; }
+p { margin-bottom: 8pt; }
+ul,ol { padding-left: 18pt; margin-bottom: 8pt; }
+li { margin-bottom: 4pt; }
+.page { page-break-after: always; min-height: 255mm; position: relative; }
+.page:last-child { page-break-after: auto; }
+.brand { color: #133B2C; font-weight: 900; letter-spacing: 2pt; font-size: 10pt; }
+.mark { display:inline-block; background:#133B2C; color:white; border-radius:8px; padding:7px 9px; margin-right:8px; }
+.eyebrow { color:#69776e; text-transform:uppercase; letter-spacing:1.5pt; font-size:8pt; font-weight:bold; margin-bottom:8pt; }
+.hero { background:#133B2C; color:#FCFBF7; border-radius:20px; padding:31px 30px; margin:35mm 0 22px; }
+.hero h1 { color:#FCFBF7; font-size:38pt; margin-top:24px; }
+.hero p { color:#e8eee7; max-width:440px; font-size:13pt; }
+.accent { color:#FFD000; }
+.meta { color:#b7c9bb; font-size:9pt; margin-top:24px; }
+.rule { height:4px; width:54px; background:#FFD000; border-radius:4px; margin:13px 0 17px; }
+.lead { font-size:14pt; line-height:1.4; color:#355044; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0; }
+.card { background:#f2f4ed; border:1px solid #e3e9df; border-radius:12px; padding:12px 13px; }
+.card p:last-child, .card ul:last-child { margin-bottom:0; }
+.tag { display:inline-block; background:#fff6c7; color:#594900; border-radius:20px; padding:4px 8px; margin:2px 3px 2px 0; font-size:8pt; font-weight:bold; }
+.callout { border-left:4px solid #FFD000; background:#fff9dc; padding:10px 13px; margin:12px 0; }
+.small { font-size:8.5pt; color:#627168; }
+.muted { color:#637269; }
+.step { display:flex; gap:11px; margin:10px 0; }
+.num { flex:0 0 26px; height:26px; border-radius:50%; background:#133B2C; color:white; text-align:center; line-height:26px; font-weight:bold; }
+.step div:last-child { flex:1; }
+.pill-title { color:#133B2C; font-weight:bold; }
+.footer { position:absolute; bottom:0; left:0; right:0; border-top:1px solid #e2e8df; padding-top:7px; color:#879188; font-size:8pt; display:flex; justify-content:space-between; }
+.cover-footer { color:#b7c9bb; border-color:#476456; }
+.quote { font-size:17pt; line-height:1.38; color:#133B2C; font-weight:bold; padding:16px; background:#f2f4ed; border-radius:12px; }
+.two-col { columns:2; column-gap:25px; }
+.nowrap { white-space:nowrap; }
+</style>
+</head>
+<body>
+<section class="page">
+  <div class="brand"><span class="mark">✳</span> AMIVOY</div>
+  <div class="hero">
+    <div class="eyebrow" style="color:#c8d7ca">PRÉSENTATION DU PRODUIT · 03 OCTOBRE 2026</div>
+    <h1>Les bons plans<br><span class="accent">se vivent ensemble.</span></h1>
+    <div class="rule"></div>
+    <p>Une application pour organiser les voyages et les sorties avec ses amis, depuis la première idée jusqu’aux souvenirs partagés.</p>
+    <div class="meta">Document de présentation · État du projet et prochaines étapes</div>
+  </div>
+  <p class="lead">Amivoy rassemble au même endroit les personnes, les idées, le programme, le budget et les souvenirs d’un groupe.</p>
+  <div class="grid">
+    <div class="card"><h3>Deux façons de se retrouver</h3><p>Une sortie de quelques heures ou un voyage organisé sur plusieurs jours.</p></div>
+    <div class="card"><h3>Un même groupe</h3><p>Les amis choisissent ensemble, confirment leur présence et suivent ce qui est prévu.</p></div>
+  </div>
+  <div class="footer cover-footer"><span>AMIVOY · Présentation du produit</span><span>Document de travail</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">01 · L’IDÉE</div>
+  <h2>Qu’est-ce qu’Amivoy ?</h2>
+  <p class="lead">Amivoy est une application mobile de planification sociale : elle aide un groupe à transformer une envie commune en activité organisée et en expérience mémorable.</p>
+  <p>Un groupe d’amis veut partir quelque part, dîner ensemble ou découvrir un nouveau lieu. Aujourd’hui, les décisions sont souvent dispersées entre messages, cartes, notes, calculs de dépenses et albums photos. Amivoy propose un espace partagé pour rassembler ces étapes et garder le fil du projet.</p>
+  <h3>Le problème auquel l’application répond</h3>
+  <div class="grid">
+    <div class="card"><h3>Les échanges se perdent</h3><p>Les adresses, horaires et changements de programme restent éparpillés dans les conversations.</p></div>
+    <div class="card"><h3>Décider prend du temps</h3><p>Il faut savoir qui vient, choisir une date et trouver un lieu qui convient au groupe.</p></div>
+    <div class="card"><h3>Les dépenses sont floues</h3><p>Le groupe veut suivre les contributions et répartir les frais sans refaire les comptes de tête.</p></div>
+    <div class="card"><h3>Les souvenirs se dispersent</h3><p>Les photos sont prises par différentes personnes et ne racontent pas toujours l’histoire commune.</p></div>
+  </div>
+  <h3>La proposition de valeur</h3>
+  <div class="callout"><strong>Amivoy permet à un groupe d’amis de découvrir des lieux, décider ensemble, organiser une sortie ou un voyage, suivre les dépenses et conserver les souvenirs au même endroit.</strong></div>
+  <p>Le produit est conçu en pensant aux usages locaux en Afrique, avec une place importante accordée aux destinations du continent, aux sorties de proximité et aux montants en FCFA (XOF). La recherche de lieux est prévue pour s’appuyer sur des données cartographiques réelles lorsque le service Geoapify est configuré.</p>
+  <div><span class="tag">Voyager ensemble</span><span class="tag">Sortir ensemble</span><span class="tag">Décider ensemble</span><span class="tag">Garder les souvenirs</span></div>
+  <div class="footer"><span>AMIVOY · Présentation du produit</span><span>01</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">02 · POUR QUI ?</div>
+  <h2>Les groupes qui veulent passer de l’idée à l’action</h2>
+  <div class="grid">
+    <div class="card"><h3>Groupes d’amis</h3><p>Pour se retrouver dans un restaurant, à un événement, chez quelqu’un ou dans un lieu public.</p></div>
+    <div class="card"><h3>Familles et proches</h3><p>Pour préparer une sortie ou des vacances à plusieurs, en gardant les informations accessibles au groupe.</p></div>
+    <div class="card"><h3>Petites communautés</h3><p>Pour les cercles d’amis qui organisent régulièrement des activités et souhaitent retrouver leurs événements passés.</p></div>
+    <div class="card"><h3>Voyageurs en groupe</h3><p>Pour bâtir un itinéraire avec plusieurs étapes, activités, budget et souvenirs partagés.</p></div>
+  </div>
+  <h3>Exemple : une sortie en ville</h3>
+  <div class="step"><div class="num">1</div><div><span class="pill-title">Créer la sortie.</span> L’organisateur choisit un titre, un lieu, une date, une heure, un budget indicatif et les amis concernés.</div></div>
+  <div class="step"><div class="num">2</div><div><span class="pill-title">Partager le rendez-vous.</span> Les participants répondent, consultent le lieu et confirment leur arrivée le moment venu.</div></div>
+  <div class="step"><div class="num">3</div><div><span class="pill-title">Vivre la sortie.</span> Le groupe suit les informations pratiques et peut noter les participations prévues.</div></div>
+  <div class="step"><div class="num">4</div><div><span class="pill-title">Garder une trace.</span> Les photos, légendes et souvenirs peuvent être associés à la sortie et partagés dans une Story du groupe.</div></div>
+  <h3>Exemple : préparer un voyage</h3>
+  <p>Le groupe choisit une destination, puis ajoute les villes ou étapes de son parcours. Il peut proposer des activités, décider par sondage, suivre le budget et les dépenses, préparer une liste d’affaires et compléter un carnet de voyage.</p>
+  <div class="callout"><strong>Le principe central :</strong> les membres du cercle ne sont pas seulement invités à consulter un programme. Ils peuvent participer à sa préparation.</div>
+  <div class="footer"><span>AMIVOY · Présentation du produit</span><span>02</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">03 · LES FONCTIONS</div>
+  <h2>Un espace partagé pour le groupe</h2>
+  <div class="grid">
+    <div class="card"><h3>1. Compte et profil</h3><p>Inscription, vérification de l’adresse e-mail, connexion, récupération du mot de passe, profil et réglages de sécurité. Le backend prévoit aussi la double authentification et la gestion des sessions.</p></div>
+    <div class="card"><h3>2. Cercles d’amis</h3><p>Créer un cercle, gérer ses membres, associer le groupe à un voyage ou une sortie et partager des invitations sous forme de lien.</p></div>
+    <div class="card"><h3>3. Carte et découverte</h3><p>Explorer les pays et destinations, rechercher des lieux à visiter et découvrir des restaurants, hébergements, espaces culturels, sites naturels ou activités à proximité.</p></div>
+    <div class="card"><h3>4. Voyages</h3><p>Créer un voyage, choisir les participants, organiser des étapes par ville, ajouter des activités, consulter un ordre de parcours, suivre la préparation et tenir un carnet.</p></div>
+    <div class="card"><h3>5. Sorties locales</h3><p>Définir le lieu et le rendez-vous, inviter le cercle, recueillir les réponses, suivre l’arrivée, noter les contributions et ajouter des photos.</p></div>
+    <div class="card"><h3>6. Budget et frais</h3><p>Enregistrer un budget indicatif, des contributions et des dépenses, puis afficher une répartition ou un aperçu des montants dus en XOF.</p></div>
+    <div class="card"><h3>7. Souvenirs</h3><p>Associer des photos, textes et entrées de carnet aux moments du groupe. Certaines vues proposent un partage sous forme de Story ou de carte récapitulative.</p></div>
+    <div class="card"><h3>8. Organisation du groupe</h3><p>Le backend comprend aussi des ressources pour les sondages, rappels, notifications, points de rendez-vous et alertes de voyage.</p></div>
+  </div>
+  <p class="small">Les écrans et commandes visibles peuvent dépendre de la configuration du backend et du service externe. La présence d’une route API ou d’un écran ne signifie pas toujours que toute l’expérience est terminée.</p>
+  <div class="footer"><span>AMIVOY · Présentation du produit</span><span>03</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">04 · COMMENT ÇA FONCTIONNE ?</div>
+  <h2>De l’application à l’API</h2>
+  <p>Amivoy se compose de deux parties : l’application utilisée par les membres du groupe et le backend qui reçoit les demandes, applique les règles et conserve les données connectées.</p>
+  <div class="grid">
+    <div class="card"><h3>Application</h3><p><strong>Expo, React Native et TypeScript.</strong> Une seule base de code vise iOS, Android et le web. Expo Router gère les pages et la navigation. Les interfaces utilisent une palette ivoire, vert profond et jaune.</p></div>
+    <div class="card"><h3>Backend</h3><p><strong>API REST versionnée sous Laravel.</strong> Elle prend en charge les comptes, cercles, invitations, sorties, voyages, budgets et différentes ressources de l’application.</p></div>
+  </div>
+  <h3>Recherche de lieux et carte</h3>
+  <p>La recherche de destinations et les suggestions de lieux à proximité sont relayées par les routes du backend. Une intégration Geoapify est présente pour le géocodage et les catégories de lieux. Elle nécessite une clé <span class="nowrap">GEOAPIFY_API_KEY</span> configurée côté serveur. Sans cette clé, le backend conserve les voies de recherche existantes. La carte affichée, elle, garde ses fournisseurs web et mobiles actuels : Geoapify Places apporte des données de lieux, ce n’est pas le moteur graphique de toute la carte.</p>
+  <div class="callout"><strong>Confidentialité pratique :</strong> la clé Geoapify appartient au backend et ne doit pas être incluse dans le paquet mobile.</div>
+  <h3>Argent et devise</h3>
+  <p>L’interface met les exemples de montants en FCFA et le backend prend en charge XOF. Les entrées de contribution et de dépenses sont des suivis comptables. Elles ne débitent pas un compte et ne constituent pas un paiement mobile money.</p>
+  <h3>Ce que l’application ne fait pas automatiquement</h3>
+  <ul>
+    <li>La suggestion d’ordre des étapes est une aide au parcours; ce n’est pas une navigation GPS virage par virage.</li>
+    <li>Une fiche cartographique ne garantit pas les horaires, les prix, les disponibilités ou la qualité d’un établissement.</li>
+    <li>Un lien d’invitation partageable ne signifie pas qu’un SMS, un e-mail ou un WhatsApp est envoyé automatiquement.</li>
+    <li>Un écran d’alerte ou de partage de position ne remplace pas un service d’urgence et ne garantit pas un suivi GPS permanent.</li>
+  </ul>
+  <div class="footer"><span>AMIVOY · Présentation du produit</span><span>04</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">05 · ÉTAT DU PROJET</div>
+  <h2>Une base déjà riche, à consolider</h2>
+  <p>Le dépôt contient une application structurée et un backend Laravel avec de nombreux modèles et routes métier. Plusieurs parcours sont déjà reliés à l’API; d’autres écrans affichent des données de démonstration ou ne couvrent pas encore le flux réel de bout en bout. Amivoy est donc un produit en développement, pas encore un service public prêt à être lancé à grande échelle.</p>
+  <h3>Éléments présents dans le projet</h3>
+  <ul>
+    <li>Parcours de compte, connexion et sécurité reliés à l’API Laravel.</li>
+    <li>Services API pour les cercles, les invitations et les sorties.</li>
+    <li>Écrans de voyage couvrant étapes, activités, budget, préparation, carnet et sécurité avec divers degrés de raccordement.</li>
+    <li>Recherche de destinations et suggestions géographiques; l’usage de Geoapify dépend de la clé de configuration serveur.</li>
+    <li>API modulaire pour notifications, rappels, partage de position, alertes, photos, réservations et synchronisation.</li>
+    <li>Fonctions de démonstration qui permettent de montrer l’expérience avant que chaque flux soit connecté ou fiabilisé.</li>
+  </ul>
+  <h3>Prochaines priorités conseillées</h3>
+  <div class="step"><div class="num">1</div><div><span class="pill-title">Verrouiller le parcours essentiel.</span> Tester un compte, un cercle, une invitation, une sortie, un voyage et le retour aux données après reconnexion.</div></div>
+  <div class="step"><div class="num">2</div><div><span class="pill-title">Finir la découverte.</span> Configurer Geoapify, contrôler la couverture en Afrique et afficher les limites et les crédits des données.</div></div>
+  <div class="step"><div class="num">3</div><div><span class="pill-title">Rendre les invitations vraiment simples.</span> Vérifier le lien universel, son ouverture après installation et le suivi de la réponse; ajouter l’envoi réel seulement avec un fournisseur configuré.</div></div>
+  <div class="step"><div class="num">4</div><div><span class="pill-title">Tester les dépenses et les médias.</span> Vérifier les calculs, les montants XOF, l’envoi des photos et le partage iOS/Android/web.</div></div>
+  <div class="step"><div class="num">5</div><div><span class="pill-title">Valider sécurité et confidentialité.</span> Documenter le consentement au partage de position, les règles de conservation et les limites des alertes.</div></div>
+  <div class="callout"><strong>Positionnement à retenir :</strong> Amivoy réunit les sorties spontanées et les voyages planifiés avec la même bande d’amis, en faisant du groupe le point de départ de l’organisation.</div>
+  <p class="small">État décrit d’après le code et la documentation du dépôt au 3 octobre 2026. La configuration locale, les identifiants de services et les tests sur de vrais appareils peuvent modifier ce qui est utilisable dans un environnement donné.</p>
+  <div class="footer"><span>AMIVOY · Présentation du produit</span><span>05</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">06 · LE PITCH</div>
+  <h2>Expliquer Amivoy en moins d’une minute</h2>
+  <p class="quote">« Amivoy est une application qui aide les amis à organiser leurs sorties et leurs voyages au même endroit. On choisit ensemble un lieu ou une destination, on invite le groupe, on prépare le programme et le budget, puis on garde les photos et les souvenirs de ce qu’on a vécu. L’idée, c’est que les bons moments soient plus faciles à organiser et que personne ne perde les informations dans les conversations. »</p>
+  <h3>Version très courte</h3>
+  <p>« Amivoy, c’est l’application qui transforme les idées de sortie et de voyage entre amis en projets simples à organiser, à vivre et à garder en souvenir. »</p>
+  <h3>Si la personne demande : “Qu’est-ce qui est différent ?”</h3>
+  <p>« Amivoy met dans le même parcours les cercles d’amis, les sorties locales et les voyages. Le groupe peut garder ses lieux, ses décisions, ses dépenses et ses souvenirs ensemble. Le projet pense aussi aux destinations africaines et aux montants en FCFA. »</p>
+  <h3>Si elle demande : “Est-ce déjà disponible ?”</h3>
+  <p>« L’application est en cours de développement. Une bonne partie de l’interface et plusieurs connexions au backend sont en place, mais certaines fonctions restent en démonstration ou doivent encore être configurées et testées avant une mise à disposition complète. »</p>
+  <div class="rule"></div>
+  <p class="small">Astuce : commence par une situation concrète — “On veut se retrouver samedi, mais on ne sait pas encore où ni qui vient” — puis montre comment Amivoy rassemble les décisions, le rendez-vous, les dépenses et les photos.</p>
+  <div class="footer"><span>AMIVOY · Présentation du produit</span><span>06</span></div>
+</section>
+</body>
+</html>

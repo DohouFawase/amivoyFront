@@ -261,10 +261,11 @@ export default function CreateTrip() {
               </Surface>
             </Pressable>
           ))}
+          {citySuggestions.some((suggestion) => suggestion.source === 'Geoapify') && <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Link href="https://www.geoapify.com/" style={st.footnote}>Powered by Geoapify</Link><AppText style={st.footnote}>· © OpenStreetMap contributors</AppText></View>}
           {!selectedPlace && place.trim().length >= 2 && !placeSearchLoading && !placeSearchError && citySuggestions.length === 0 && <AppText style={st.footnote}>Aucun lieu correspondant dans le catalogue API. Tu peux garder cette destination ou en choisir une sur la carte.</AppText>}
           {selectedPlace && <Surface style={st.restaurantPanel}>
             <AppText style={st.suggestionTitle}>Restaurants près de {selectedPlace.name}</AppText>
-            <AppText style={st.footnote}>Établissements référencés dans OpenStreetMap, à confirmer sur place. Les horaires et l’ouverture peuvent changer.</AppText>
+            <AppText style={st.footnote}>{restaurantSuggestions[0]?.source === 'Geoapify' ? 'Suggestions Geoapify, à confirmer sur place. Les horaires et l’ouverture peuvent changer.' : 'Établissements référencés dans OpenStreetMap, à confirmer sur place. Les horaires et l’ouverture peuvent changer.'}</AppText>
             {restaurantLoading && <AppText style={st.footnote}>Chargement des restaurants…</AppText>}
             {!!restaurantError && <AppText style={[st.footnote, { color: '#A7493C' }]}>{restaurantError}</AppText>}
             {restaurantSuggestions.map((suggestion) => {
@@ -283,7 +284,7 @@ export default function CreateTrip() {
               </Pressable>;
             })}
             {!restaurantLoading && !restaurantError && restaurantSuggestions.length === 0 && <AppText style={st.footnote}>Aucun restaurant proposé par l’API autour de cette ville.</AppText>}
-            {!!restaurantSuggestions.length && <AppText style={st.footnote}>© OpenStreetMap contributors · Données sous licence ODbL</AppText>}
+            {!!restaurantSuggestions.length && (restaurantSuggestions[0]?.source === 'Geoapify' ? <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Link href="https://www.geoapify.com/" style={st.footnote}>Powered by Geoapify</Link><AppText style={st.footnote}>· © OpenStreetMap contributors</AppText></View> : <AppText style={st.footnote}>© OpenStreetMap contributors · Données sous licence ODbL</AppText>)}
           </Surface>}
           <AppText style={st.label}>DATES DU VOYAGE</AppText>
           <View style={{ flexDirection: 'row', gap: 10 }}><AppTextInput value={startDate} onChangeText={setStartDate} placeholder="Départ · AAAA-MM-JJ" style={[s.input, { flex: 1 }]} /><AppTextInput value={endDate} onChangeText={setEndDate} placeholder="Retour · AAAA-MM-JJ" style={[s.input, { flex: 1 }]} /></View>

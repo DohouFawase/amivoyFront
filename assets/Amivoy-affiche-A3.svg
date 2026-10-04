@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="297mm" height="420mm" viewBox="0 0 1120 1584" role="img" aria-labelledby="title desc">
+  <title id="title">Amivoy — affiche A3</title>
+  <desc id="desc">Affiche pour Amivoy, l’application qui aide les amis à organiser sorties et voyages ensemble.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#133B2C"/><stop offset="1" stop-color="#1E5940"/></linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFE37A"/><stop offset="1" stop-color="#FFD000"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="22" stdDeviation="24" flood-color="#09271D" flood-opacity=".28"/></filter>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="2" fill="#FCFBF7" opacity=".16"/></pattern>
+  </defs>
+  <rect width="1120" height="1584" fill="#FCFBF7"/>
+  <rect x="28" y="28" width="1064" height="1528" rx="42" fill="url(#bg)"/>
+  <circle cx="920" cy="245" r="245" fill="url(#sun)" opacity=".12"/>
+  <circle cx="150" cy="1030" r="275" fill="#F2A27E" opacity=".08"/>
+  <rect x="28" y="28" width="1064" height="1528" rx="42" fill="url(#dots)"/>
+
+  <!-- Brand -->
+  <g transform="translate(92 92)">
+    <path d="M8 18c23-21 52-21 75 0M20 36c16-14 35-14 51 0M34 54c8-7 16-7 24 0" fill="none" stroke="#FFD000" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="46" cy="68" r="6" fill="#FFD000"/>
+    <text x="102" y="62" fill="#FCFBF7" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="800" letter-spacing="-1">amivoy</text>
+  </g>
+  <text x="94" y="245" fill="#FFD000" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" letter-spacing="4">LES MEILLEURS PLANS SE FONT ENSEMBLE</text>
+  <text x="88" y="365" fill="#FCFBF7" font-family="Arial, Helvetica, sans-serif" font-size="94" font-weight="800" letter-spacing="-4">On y va ?</text>
+  <text x="94" y="425" fill="#D7E5D8" font-family="Arial, Helvetica, sans-serif" font-size="31">La prochaine sortie commence ici.</text>
+
+  <!-- Decorative route -->
+  <path d="M120 560c110-92 185 72 300-15 115-88 150-83 225-25" fill="none" stroke="#FFD000" stroke-width="5" stroke-dasharray="4 17" stroke-linecap="round" opacity=".8"/>
+  <circle cx="121" cy="560" r="14" fill="#FFD000"/><circle cx="645" cy="520" r="14" fill="#FFD000"/>
+  <g transform="translate(621 475)" fill="#FFD000"><path d="M24 0C10.7 0 0 10.7 0 24c0 18 24 44 24 44s24-26 24-44C48 10.7 37.3 0 24 0zm0 32a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></g>
+
+  <!-- Phone mockup -->
+  <g filter="url(#shadow)" transform="rotate(4 690 880)">
+    <rect x="395" y="535" width="505" height="710" rx="58" fill="#10271F"/>
+    <rect x="411" y="551" width="473" height="678" rx="45" fill="#FCFBF7"/>
+    <rect x="570" y="566" width="155" height="18" rx="9" fill="#D9DED7"/>
+    <text x="452" y="642" fill="#133B2C" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700">TON CERCLE</text>
+    <text x="452" y="685" fill="#133B2C" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800">On fait quoi ?</text>
+    <text x="452" y="718" fill="#727A72" font-family="Arial, Helvetica, sans-serif" font-size="16">Des idées, un groupe, et c’est parti.</text>
+    <!-- outing card -->
+    <rect x="445" y="756" width="405" height="198" rx="26" fill="#E8EFE4"/>
+    <rect x="465" y="776" width="145" height="158" rx="18" fill="#E4A37C"/>
+    <circle cx="537" cy="832" r="43" fill="#F7D79C" opacity=".95"/>
+    <path d="M475 904c32-42 48-14 69-47 18 24 32 11 66 48v16H475z" fill="#52755A"/>
+    <path d="M489 897c21-25 36-22 49-2 19-23 36-22 61 5" fill="none" stroke="#FCFBF7" stroke-width="5" stroke-linecap="round"/>
+    <text x="630" y="804" fill="#477357" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">SAMEDI · 16 H</text>
+    <text x="630" y="840" fill="#133B2C" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800">Pique-nique</text>
+    <text x="630" y="869" fill="#133B2C" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800">au bord de l’eau</text>
+    <text x="630" y="906" fill="#727A72" font-family="Arial, Helvetica, sans-serif" font-size="14">4 amis · Cotonou</text>
+    <rect x="630" y="918" width="121" height="27" rx="13" fill="#133B2C"/>
+    <text x="690" y="937" text-anchor="middle" fill="#FCFBF7" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">JE PARTICIPE ✓</text>
+    <!-- trip card -->
+    <rect x="445" y="978" width="405" height="155" rx="26" fill="#F3E8D8"/>
+    <circle cx="515" cy="1055" r="43" fill="#FFD000"/>
+    <path d="M497 1063l15-28 13 16 9-10 15 22z" fill="#477357"/>
+    <circle cx="526" cy="1041" r="5" fill="#FCFBF7"/>
+    <text x="581" y="1025" fill="#9D7951" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">PROCHAINE AVENTURE</text>
+    <text x="581" y="1064" fill="#133B2C" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800">Un week-end ailleurs</text>
+    <text x="581" y="1097" fill="#727A72" font-family="Arial, Helvetica, sans-serif" font-size="14">Destination à choisir ensemble</text>
+    <!-- people -->
+    <text x="452" y="1180" fill="#133B2C" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700">À plusieurs, c’est encore mieux</text>
+    <g font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" text-anchor="middle">
+      <circle cx="474" cy="1203" r="17" fill="#D98F72"/><text x="474" y="1208" fill="#fff">M</text>
+      <circle cx="516" cy="1203" r="17" fill="#A7B982"/><text x="516" y="1208" fill="#fff">A</text>
+      <circle cx="558" cy="1203" r="17" fill="#D9B26E"/><text x="558" y="1208" fill="#fff">S</text>
+      <circle cx="600" cy="1203" r="17" fill="#9CAFC0"/><text x="600" y="1208" fill="#fff">+</text>
+    </g>
+  </g>
+
+  <!-- Benefits -->
+  <g transform="translate(94 1300)" font-family="Arial, Helvetica, sans-serif">
+    <text x="0" y="0" fill="#FFD000" font-size="19" font-weight="700" letter-spacing="3">UNE APP POUR</text>
+    <text x="0" y="52" fill="#FCFBF7" font-size="25" font-weight="700">Sortir · Voyager · Se retrouver</text>
+    <text x="0" y="93" fill="#D7E5D8" font-size="19">Les idées, l’organisation et les souvenirs de votre groupe.</text>
+  </g>
+  <rect x="94" y="1444" width="470" height="65" rx="32" fill="#FFD000"/>
+  <text x="329" y="1486" text-anchor="middle" fill="#133B2C" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" letter-spacing="1">IMAGINEZ · ORGANISEZ · VIVEZ</text>
+  <text x="1010" y="1485" text-anchor="end" fill="#BBD0BF" font-family="Arial, Helvetica, sans-serif" font-size="15">AMIVOY</text>
+</svg>

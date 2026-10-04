@@ -191,7 +191,7 @@ export default function MapScreen() {
 
         {!!message && <View style={styles.status}><AppText style={styles.statusText}>{busy ? '◌  ' : 'ℹ  '}{message}</AppText>{busy && <ActivityIndicator size="small" color={C.green} />}</View>}
 
-        {!!searchResults.length && <View style={styles.results}>{searchResults.map((place) => <Pressable key={place.id} onPress={() => chooseSearchResult(place)} style={styles.resultRow}><AppText style={styles.resultPin}>⌖</AppText><View style={{ flex: 1 }}><AppText style={styles.resultName}>{place.name}</AppText><AppText style={styles.resultAddress} numberOfLines={2}>{place.description}</AppText></View><AppText style={styles.chevron}>›</AppText></Pressable>)}</View>}
+        {!!searchResults.length && <View style={styles.results}>{searchResults.map((place) => <Pressable key={place.id} onPress={() => chooseSearchResult(place)} style={styles.resultRow}><AppText style={styles.resultPin}>⌖</AppText><View style={{ flex: 1 }}><AppText style={styles.resultName}>{place.name}</AppText><AppText style={styles.resultAddress} numberOfLines={2}>{place.description}</AppText></View><AppText style={styles.chevron}>›</AppText></Pressable>)}{searchResults.some((place) => place.source === 'Geoapify') && <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingBottom: 6 }}><Link href="https://www.geoapify.com/" style={styles.resultAddress}>Powered by Geoapify</Link><AppText style={styles.resultAddress}>· © OpenStreetMap contributors</AppText></View>}</View>}
 
         {!!selected && <Surface style={styles.detailCard}>
           <View style={styles.detailHeading}><View style={styles.detailIcon}><AppIcon name={mode==='outing'?categoryIcon(category):selectedOption?.emoji??'pin'} size={20} /></View><View style={{ flex: 1 }}><AppText style={styles.detailName}>{selected.name}</AppText><AppText style={styles.detailAddress}>{selected.address || selected.category}</AppText></View><AppText style={styles.liveTag}>CARTE</AppText></View>
@@ -199,6 +199,7 @@ export default function MapScreen() {
           {nearby.length > 0 && <>
             <AppText style={styles.sectionTitleSmall}>À découvrir près d’ici</AppText>
             {nearby.slice(0, 7).map((place) => <Pressable key={place.id} onPress={() => { setSelected(place); setCenter({ latitude: place.latitude, longitude: place.longitude }); }} style={styles.nearbyRow}><AppIcon name={place.category==='Restaurant'?'restaurant':place.category==='Café'?'coffee':place.category==='Musée'?'culture':categoryIcon(category)} size={18} /><View style={{ flex: 1 }}><AppText style={styles.nearbyName}>{place.name}</AppText><AppText style={styles.nearbyMeta}>{place.category}{place.address ? ` · ${place.address}` : ''}</AppText>{!!place.description && <AppText style={styles.nearbyMeta}>{place.description}</AppText>}</View><AppText style={styles.nearbyChevron}>›</AppText></Pressable>)}
+            {nearby.some((place) => place.source === 'Geoapify') && <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}><Link href="https://www.geoapify.com/" style={styles.nearbyMeta}>Powered by Geoapify</Link><AppText style={styles.nearbyMeta}>· © OpenStreetMap contributors</AppText></View>}
           </>}
         </Surface>}
 

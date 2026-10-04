@@ -48,6 +48,7 @@ export interface PlaceSearchRecord {
   longitude: number | null;
   emoji: string | null;
   isCountry: boolean;
+  source?: string;
 }
 
 export interface NearbyPlaceSuggestion {
